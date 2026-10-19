@@ -11,6 +11,7 @@ identification. Review all assignments against the scanned source tables.
 """
 from __future__ import annotations
 import argparse, json
+import hashlib
 import re
 from pathlib import Path
 import tempfile
@@ -538,33 +539,6 @@ def main():
             ),
         )
     ]
-    x_axis_limits = None
-    if axis_options[axis_label] == "wavelength_nm":
-        set_wavelength_limits = st.sidebar.checkbox(
-            "Set wavelength range",
-            value=False,
-        )
-        if set_wavelength_limits:
-            wavelength_columns = st.sidebar.columns(2)
-            wavelength_min = wavelength_columns[0].number_input(
-                "Minimum wavelength (nm)",
-                min_value=0.000001,
-                value=350.0,
-                step=1.0,
-            )
-            wavelength_max = wavelength_columns[1].number_input(
-                "Maximum wavelength (nm)",
-                min_value=0.000001,
-                value=900.0,
-                step=1.0,
-            )
-            if wavelength_min >= wavelength_max:
-                st.sidebar.error(
-                    "Minimum wavelength must be less than maximum wavelength."
-                )
-                st.stop()
-            x_axis_limits = (wavelength_min, wavelength_max)
-
     if uploaded_file is None:
         st.info("Upload a TXT, CSV or DAT spectrum using the sidebar to begin.")
         st.markdown("#### Supported input")
@@ -586,12 +560,39 @@ def main():
         ion_filter = ion_choice
 
     try:
+        uploaded_data = uploaded_file.getvalue()
+        spectrum_identity = hashlib.sha256(uploaded_data).hexdigest()[:12]
         with tempfile.TemporaryDirectory() as temporary_directory:
             spectrum_path = Path(temporary_directory) / (
                 f"uploaded_spectrum{Path(uploaded_file.name).suffix}"
             )
-            spectrum_path.write_bytes(uploaded_file.getvalue())
+            spectrum_path.write_bytes(uploaded_data)
             df = read_spectrum(spectrum_path, axis_options[axis_label])
+            x_axis_limits = None
+            if df.attrs.get("axis") == "wavelength_nm":
+                wavelength_columns = st.sidebar.columns(2)
+                wavelength_min = wavelength_columns[0].number_input(
+                    "Emin (nm)",
+                    min_value=0.000001,
+                    value=float(df["x"].min()),
+                    step=1.0,
+                    format="%.6f",
+                    key=f"wavelength_emin_{spectrum_identity}",
+                    help="Lower wavelength bound for the displayed spectrum.",
+                )
+                wavelength_max = wavelength_columns[1].number_input(
+                    "Emax (nm)",
+                    min_value=0.000001,
+                    value=float(df["x"].max()),
+                    step=1.0,
+                    format="%.6f",
+                    key=f"wavelength_emax_{spectrum_identity}",
+                    help="Upper wavelength bound for the displayed spectrum.",
+                )
+                if wavelength_min >= wavelength_max:
+                    st.sidebar.error("Emin must be less than Emax.")
+                    st.stop()
+                x_axis_limits = (wavelength_min, wavelength_max)
             applied_prominence = (
                 prominence * (df["intensity"].max() - df["intensity"].min())
                 if relative_prominence
