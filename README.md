@@ -1,6 +1,6 @@
 # RareEarthsLab
 
-**A free web application for rare-earth emission spectroscopy and candidate
+**A free web application for rare earth emission spectroscopy and element peaks /
 transition identification.**
 
 [![Launch RareEarthsLab](https://img.shields.io/badge/Launch-RareEarthsLab-168B8B?style=for-the-badge)](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
