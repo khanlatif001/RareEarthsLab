@@ -1,0 +1,7 @@
+# RareEarthsLab: dependencies for the Streamlit web application
+streamlit
+numpy
+pandas
+scipy
+matplotlib
+plotly
