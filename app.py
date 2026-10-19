@@ -282,7 +282,8 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                  peak_label_fontsize=10, axis_label_fontsize=16,
                  background_colormap="inferno", spectrum_linewidth=1.8,
                  smoothed_signal_color="#ff5a1f", tick_label_fontsize=12,
-                 show_peak_labels=True, x_axis_limits=None):
+                 show_peak_labels=True, x_axis_limits=None, show_title=True,
+                 show_provisional_note=True):
     x = df["x"].to_numpy(float)
     y = df["intensity"].to_numpy(float)
     fig, ax = plt.subplots(figsize=(7, 4.5))
@@ -309,49 +310,51 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
             label="Experimental spectrum")
     ax.plot(x, smoothed, lw=spectrum_linewidth, color=smoothed_signal_color,
             label="Smoothed signal")
-    if not peaks.empty:
+    if show_peak_labels and not peaks.empty:
         ax.scatter(peaks["x_peak"], peaks["intensity_smoothed"], s=24, zorder=4,
                    marker="o", color="white", edgecolors="#ff5a1f", label="Detected peaks")
-        if show_peak_labels:
-            # Label each detected peak; top candidate shown only if a plausible match exists.
-            for _, p in peaks.iterrows():
-                subset = matches[(matches["peak_id"] == p["peak_id"]) &
-                                 matches.get("status", pd.Series(dtype=str)).isin(
-                                     ["CANDIDATE_MATCH"])]
-                if not subset.empty and pd.notna(subset.iloc[0].get("ion")):
-                    m = subset.iloc[0]
-                    label = (f'{m["ion"]} {format_state(m["upper_state"])} → '
-                             f'{format_state(m["lower_state"])}\n'
-                             f'ref {m["reference_wavelength_nm"]:.1f} nm '
-                             f'(Δ {m["delta_reference_minus_observed_nm"]:+.1f} nm)')
-                else:
-                    label = f'Peak {int(p["peak_id"])}: no database match'
-                label += f'\n{p["wavelength_nm"]:.1f} nm'
-                label_above = p["intensity_smoothed"] <= display_max * 0.55
-                offset = (0, 8) if label_above else (0, -8)
-                vertical_alignment = "bottom" if label_above else "top"
-                ax.annotate(label, (p["x_peak"], p["intensity_smoothed"]),
-                            xytext=offset, textcoords="offset points",
-                            fontsize=peak_label_fontsize, color="white", rotation=90,
-                            ha="center", va=vertical_alignment)
+        # Label each detected peak; top candidate shown only if a plausible match exists.
+        for _, p in peaks.iterrows():
+            subset = matches[(matches["peak_id"] == p["peak_id"]) &
+                             matches.get("status", pd.Series(dtype=str)).isin(
+                                 ["CANDIDATE_MATCH"])]
+            if not subset.empty and pd.notna(subset.iloc[0].get("ion")):
+                m = subset.iloc[0]
+                label = (f'{m["ion"]} {format_state(m["upper_state"])} → '
+                         f'{format_state(m["lower_state"])}\n'
+                         f'ref {m["reference_wavelength_nm"]:.1f} nm '
+                         f'(Δ {m["delta_reference_minus_observed_nm"]:+.1f} nm)')
+            else:
+                label = f'Peak {int(p["peak_id"])}: no database match'
+            label += f'\n{p["wavelength_nm"]:.1f} nm'
+            label_above = p["intensity_smoothed"] <= display_max * 0.55
+            offset = (0, 8) if label_above else (0, -8)
+            vertical_alignment = "bottom" if label_above else "top"
+            ax.annotate(label, (p["x_peak"], p["intensity_smoothed"]),
+                        xytext=offset, textcoords="offset points",
+                        fontsize=peak_label_fontsize, color="white", rotation=90,
+                        ha="center", va=vertical_alignment)
     if x_axis_limits is not None:
         ax.set_xlim(*x_axis_limits)
     elif x.min() < 350 and x.max() > 900 and "Wavelength" in axis_label:
         ax.set_xlim(350, 900)
     ax.set_xlabel(axis_label, fontsize=axis_label_fontsize)
     ax.set_ylabel("Intensity (a.u.)", fontsize=axis_label_fontsize)
-    title = ("Emission spectrum with peak and transition labels"
-             if show_peak_labels else "Emission spectrum with detected peaks")
-    ax.set_title(title, color="white")
+    if show_title:
+        title = ("Emission spectrum with peak and transition labels"
+                 if show_peak_labels else "Emission spectrum with detected peaks")
+        ax.set_title(title, color="white")
     ax.tick_params(colors="white", labelsize=tick_label_fontsize)
     for spine in ax.spines.values():
         spine.set_color("white")
     ax.xaxis.label.set_color("white")
     ax.yaxis.label.set_color("white")
     ax.grid(color="white", alpha=0.15)
-    legend = ax.legend(facecolor="#202020", edgecolor="white", labelcolor="white")
+    if show_peak_labels:
+        ax.legend(facecolor="#202020", edgecolor="white", labelcolor="white")
     transcription_status = matches.get("transcription_status", pd.Series(dtype=str)).fillna("").astype(str)
-    if transcription_status.str.contains("provisional", case=False).any():
+    if (show_provisional_note and
+            transcription_status.str.contains("provisional", case=False).any()):
         fig.text(0.5, 0.015, "Provisional database transcription; verify before scientific use.",
                  ha="center", fontsize=8, color="white")
         fig.tight_layout(rect=(0, 0.04, 1, 1))
@@ -492,7 +495,7 @@ def main():
         value="#ff5a1f",
     )
     show_peak_labels = st.sidebar.checkbox(
-        "Show peak transition and position labels",
+        "Show detected peaks (markers and labels)",
         value=True,
     )
     colormap_options = {
@@ -602,6 +605,26 @@ def main():
                 x_axis_limits=x_axis_limits,
             )
             plot_bytes = plot_path.read_bytes()
+            publication_plot_path = Path(temporary_directory) / "publication_spectrum.png"
+            plot_results(
+                df,
+                smoothed,
+                peaks,
+                matches,
+                publication_plot_path,
+                df.attrs.get("axis_label", axis_options[axis_label]),
+                peak_label_fontsize=peak_label_fontsize,
+                axis_label_fontsize=axis_label_fontsize,
+                background_colormap=background_colormap,
+                spectrum_linewidth=spectrum_linewidth,
+                smoothed_signal_color=smoothed_signal_color,
+                tick_label_fontsize=tick_label_fontsize,
+                show_peak_labels=show_peak_labels,
+                x_axis_limits=x_axis_limits,
+                show_title=False,
+                show_provisional_note=False,
+            )
+            publication_plot_bytes = publication_plot_path.read_bytes()
     except (OSError, ValueError, pd.errors.ParserError) as exc:
         st.error(f"Could not analyze the uploaded spectrum: {exc}")
         st.stop()
@@ -649,7 +672,7 @@ def main():
     )
     downloads[4].download_button(
         "Publication-ready plot PNG",
-        plot_bytes,
+        publication_plot_bytes,
         file_name="annotated_spectrum_300dpi.png",
         mime="image/png",
         help="Exported at 300 dpi with a 7 x 4.5 inch figure size.",
