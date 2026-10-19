@@ -351,8 +351,8 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label):
 
 
 def main():
-    st.set_page_config(page_title="Carnall Spectral Peak Analysis", layout="wide")
-    st.title("Carnall Spectral Peak Analysis")
+    st.set_page_config(page_title="Rare Earth Spectral Peak Analysis", layout="wide")
+    st.title("Rare Earth Spectral Peak Analysis")
     st.write(
         "Detect emission peaks and compare their transition energies with the "
         "available Carnall energy-level database."
