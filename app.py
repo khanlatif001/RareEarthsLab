@@ -394,7 +394,7 @@ def main():
     st.sidebar.header("Peak Detection")
     smooth_window = st.sidebar.slider(
         "Smoothing window (odd number of points)",
-        min_value=5,
+        min_value=3,
         max_value=51,
         value=9,
         step=2,
