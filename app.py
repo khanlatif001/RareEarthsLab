@@ -98,6 +98,15 @@ def format_state(state):
     return rf"$^{{{multiplicity}}}{term}_{{{angular_momentum}}}$"
 
 
+def format_ion(ion):
+    """Format an ion charge as a superscript for Matplotlib."""
+    match = re.fullmatch(r"([A-Za-z]+)(\d+[+-])", str(ion))
+    if not match:
+        return str(ion)
+    element, charge = match.groups()
+    return rf"{element}$^{{{charge}}}$"
+
+
 def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
                  prominence=0.02, distance_points=5, min_height=None):
     """Detect local maxima after optional Savitzky-Golay smoothing.
@@ -321,7 +330,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                                  ["CANDIDATE_MATCH"])]
             if not subset.empty and pd.notna(subset.iloc[0].get("ion")):
                 m = subset.iloc[0]
-                label = (f'{m["ion"]} {format_state(m["upper_state"])} → '
+                label = (f'{format_ion(m["ion"])} {format_state(m["upper_state"])} → '
                          f'{format_state(m["lower_state"])}\n'
                          f'ref {m["reference_wavelength_nm"]:.1f} nm '
                          f'(Δ {m["delta_reference_minus_observed_nm"]:+.1f} nm)')
