@@ -98,7 +98,7 @@ def format_state(state):
 
 
 def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
-                 prominence=0.02, distance_points=3, min_height=None):
+                 prominence=0.02, distance_points=5, min_height=None):
     """Detect local maxima after optional Savitzky-Golay smoothing.
 
     prominence is an absolute intensity value unless --relative-prominence is
@@ -106,7 +106,7 @@ def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
     """
     y = df["intensity"].to_numpy(float)
     # Ensure valid odd window smaller than data length.
-    win = max(3, int(smooth_window))
+    win = max(5, int(smooth_window))
     if win % 2 == 0: win += 1
     if win >= len(y): win = len(y) - 1 if (len(y)-1) % 2 else len(y)-2
     win = max(5, win)
