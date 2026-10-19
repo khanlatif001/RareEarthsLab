@@ -391,7 +391,7 @@ def main():
     }
     axis_label = st.sidebar.selectbox("Spectral position axis", list(axis_options))
 
-    st.sidebar.header("Peak detection")
+    st.sidebar.header("Peak Detection")
     smooth_window = st.sidebar.slider(
         "Smoothing window (odd number of points)",
         min_value=5,
@@ -431,7 +431,7 @@ def main():
             format="%.6f",
         )
 
-    st.sidebar.header("Transition matching")
+    st.sidebar.header("Transition Matching")
     ion_options = ["All ions", "Auto-detect from filename"] + list(database.keys())
     ion_choice = st.sidebar.selectbox(
         "Lanthanide ion",
@@ -464,22 +464,22 @@ def main():
         max_value=10,
         value=5,
     )
-    st.sidebar.header("Plot appearance")
+    st.sidebar.header("Plot Appearance")
     peak_label_fontsize = st.sidebar.slider(
         "Peak label font size",
-        min_value=8,
+        min_value=6,
         max_value=20,
         value=10,
     )
     axis_label_fontsize = st.sidebar.slider(
-        "X/Y axis label font size",
-        min_value=10,
+        "Axis label font size",
+        min_value=8,
         max_value=24,
         value=16,
     )
     tick_label_fontsize = st.sidebar.slider(
-        "X/Y tick label font size",
-        min_value=8,
+        "Tick label font size",
+        min_value=6,
         max_value=20,
         value=12,
     )
