@@ -91,7 +91,7 @@ def infer_ion_from_filename(path, database):
 
 def format_state(state):
     """Format common term symbols for Matplotlib, keeping unknown labels intact."""
-    match = re.fullmatch(r"(\d+)([A-Za-z])(\d+)", str(state))
+    match = re.fullmatch(r"(\d+)([A-Za-z])(\d+(?:/\d+)?)", str(state))
     if not match:
         return str(state)
     multiplicity, term, angular_momentum = match.groups()
