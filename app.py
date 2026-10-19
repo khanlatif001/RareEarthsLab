@@ -671,7 +671,7 @@ def main():
         mime="text/csv",
     )
     downloads[4].download_button(
-        "Publication-ready plot PNG",
+        "Save publication ready plot",
         publication_plot_bytes,
         file_name="annotated_spectrum_300dpi.png",
         mime="image/png",
