@@ -282,10 +282,10 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                  peak_label_fontsize=10, axis_label_fontsize=16,
                  background_colormap="inferno", spectrum_linewidth=1.8,
                  smoothed_signal_color="#ff5a1f", tick_label_fontsize=12,
-                 show_peak_labels=True):
+                 show_peak_labels=True, x_axis_limits=None):
     x = df["x"].to_numpy(float)
     y = df["intensity"].to_numpy(float)
-    fig, ax = plt.subplots(figsize=(15, 7))
+    fig, ax = plt.subplots(figsize=(7, 4.5))
     fig.patch.set_facecolor("#050505")
     intensity_range = float(np.ptp(y))
     display_max = float(np.max(y))
@@ -334,7 +334,9 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                             xytext=offset, textcoords="offset points",
                             fontsize=peak_label_fontsize, color="white", rotation=90,
                             ha="center", va=vertical_alignment)
-    if x.min() < 350 and x.max() > 900 and "Wavelength" in axis_label:
+    if x_axis_limits is not None:
+        ax.set_xlim(*x_axis_limits)
+    elif x.min() < 350 and x.max() > 900 and "Wavelength" in axis_label:
         ax.set_xlim(350, 900)
     ax.set_xlabel(axis_label, fontsize=axis_label_fontsize)
     ax.set_ylabel("Intensity (a.u.)", fontsize=axis_label_fontsize)
@@ -355,7 +357,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
         fig.tight_layout(rect=(0, 0.04, 1, 1))
     else:
         fig.tight_layout()
-    fig.savefig(output_png, dpi=180)
+    fig.savefig(output_png, dpi=300, facecolor=fig.get_facecolor())
     plt.close(fig)
 
 
@@ -508,6 +510,32 @@ def main():
             index=0,
         )
     ]
+    x_axis_limits = None
+    if axis_options[axis_label] == "wavelength_nm":
+        set_wavelength_limits = st.sidebar.checkbox(
+            "Set wavelength range",
+            value=False,
+        )
+        if set_wavelength_limits:
+            wavelength_columns = st.sidebar.columns(2)
+            wavelength_min = wavelength_columns[0].number_input(
+                "Minimum wavelength (nm)",
+                min_value=0.000001,
+                value=350.0,
+                step=1.0,
+            )
+            wavelength_max = wavelength_columns[1].number_input(
+                "Maximum wavelength (nm)",
+                min_value=0.000001,
+                value=900.0,
+                step=1.0,
+            )
+            if wavelength_min >= wavelength_max:
+                st.sidebar.error(
+                    "Minimum wavelength must be less than maximum wavelength."
+                )
+                st.stop()
+            x_axis_limits = (wavelength_min, wavelength_max)
 
     if uploaded_file is None:
         st.info("Upload a TXT, CSV or DAT spectrum using the sidebar to begin.")
@@ -571,6 +599,7 @@ def main():
                 smoothed_signal_color=smoothed_signal_color,
                 tick_label_fontsize=tick_label_fontsize,
                 show_peak_labels=show_peak_labels,
+                x_axis_limits=x_axis_limits,
             )
             plot_bytes = plot_path.read_bytes()
     except (OSError, ValueError, pd.errors.ParserError) as exc:
@@ -593,7 +622,7 @@ def main():
     st.subheader("Transition candidates")
     st.dataframe(matches, use_container_width=True)
 
-    downloads = st.columns(4)
+    downloads = st.columns(5)
     downloads[0].download_button(
         "Detected peaks CSV",
         peaks.to_csv(index=False),
@@ -617,6 +646,13 @@ def main():
         df.to_csv(index=False),
         file_name="spectrum_with_converted_energy.csv",
         mime="text/csv",
+    )
+    downloads[4].download_button(
+        "Publication-ready plot PNG",
+        plot_bytes,
+        file_name="annotated_spectrum_300dpi.png",
+        mime="image/png",
+        help="Exported at 300 dpi with a 7 x 4.5 inch figure size.",
     )
 
 
