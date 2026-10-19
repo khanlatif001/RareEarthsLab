@@ -1,4 +1,4 @@
-# RareEarthsLab: dependencies for the Streamlit web application
+# LuminescenceLab: dependencies for the Streamlit web application
 streamlit
 numpy
 pandas

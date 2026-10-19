@@ -1,11 +1,11 @@
-# RareEarthsLab
+# LuminescenceLab
 
-**A free web application for rare earth emission spectroscopy and element peaks /
+**A free web application for rare-earth emission spectroscopy and peak /
 transition identification.**
 
-[![Launch RareEarthsLab](https://img.shields.io/badge/Launch-RareEarthsLab-168B8B?style=for-the-badge)](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
+[![Launch LuminescenceLab](https://img.shields.io/badge/Launch-LuminescenceLab-168B8B?style=for-the-badge)](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
 
-RareEarthsLab helps researchers inspect experimental emission spectra, detect
+LuminescenceLab helps researchers inspect experimental emission spectra, detect
 peaks, and compare them with available reference energy levels for trivalent
 lanthanide ions. It combines peak detection, spectral conversion, candidate
 transition matching, plot customization, and downloadable results in a
@@ -87,7 +87,7 @@ The application provides downloads for:
 
 ## Try the hosted application
 
-Open [RareEarthsLab on Streamlit](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
+Open [LuminescenceLab on Streamlit](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
 to analyze spectra in a browser without setting up a local Python environment.
 
 ### Basic workflow
@@ -128,7 +128,7 @@ invoke the environment's Python directly with `.\.venv\Scripts\python.exe`.
 
 ### Recommended citation
 
-If you use RareEarthsLab in your research, please cite:
+If you use LuminescenceLab in your research, please cite:
 
 Khan, L. U. et al. (2026). “Lighting up materials with X-rays: Advanced X-ray
 excited optical luminescence probe at the BM08-XAFS/XRF beamline, SESAME.”
@@ -142,10 +142,10 @@ provisional transcriptions or inferred labels. Consult the original tables and
 verify each assignment before relying on it in a publication or scientific
 interpretation.
 
-RareEarthsLab is an analysis aid. Its output depends on the quality and
+LuminescenceLab is an analysis aid. Its output depends on the quality and
 calibration of the input spectrum, user-selected analysis settings, and
 reference-data coverage. Automated matches should be independently reviewed.
 
 ## License
 
-RareEarthsLab is distributed under the [MIT License](LICENSE).
+LuminescenceLab is distributed under the [MIT License](LICENSE).

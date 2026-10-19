@@ -706,7 +706,7 @@ def main():
 
     st.divider()
     st.markdown(
-        "If you use RareEarthsLab in your research, please cite: "
+        "If you use LuminescenceLab in your research, please cite: "
         "Khan, L. U. et al. (2026). “Lighting up materials with X-rays: "
         "Advanced X-ray excited optical luminescence probe at the "
         "BM08-XAFS/XRF beamline, SESAME.” *IUCrJ*, **13**. "
