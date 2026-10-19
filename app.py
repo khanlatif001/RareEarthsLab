@@ -281,7 +281,8 @@ def match_peaks(peaks, database, tolerance_cm1=None, max_matches=5,
 def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                  peak_label_fontsize=10, axis_label_fontsize=16,
                  background_colormap="inferno", spectrum_linewidth=1.8,
-                 spectrum_linecolor="#ffd447", show_peak_labels=True):
+                 smoothed_signal_color="#ff5a1f", tick_label_fontsize=12,
+                 show_peak_labels=True):
     x = df["x"].to_numpy(float)
     y = df["intensity"].to_numpy(float)
     fig, ax = plt.subplots(figsize=(15, 7))
@@ -304,9 +305,10 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
         colorbar.set_ticklabels(["Min", "Max"])
         colorbar.ax.tick_params(colors="white")
     ax.set_facecolor("#050505")
-    ax.plot(x, y, lw=spectrum_linewidth, alpha=0.9, color=spectrum_linecolor,
+    ax.plot(x, y, lw=spectrum_linewidth, alpha=0.9, color="#ffd447",
             label="Experimental spectrum")
-    ax.plot(x, smoothed, lw=2.2, color="#ff5a1f", label="Smoothed signal")
+    ax.plot(x, smoothed, lw=spectrum_linewidth, color=smoothed_signal_color,
+            label="Smoothed signal")
     if not peaks.empty:
         ax.scatter(peaks["x_peak"], peaks["intensity_smoothed"], s=24, zorder=4,
                    marker="o", color="white", edgecolors="#ff5a1f", label="Detected peaks")
@@ -339,7 +341,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     title = ("Emission spectrum with peak and transition labels"
              if show_peak_labels else "Emission spectrum with detected peaks")
     ax.set_title(title, color="white")
-    ax.tick_params(colors="white")
+    ax.tick_params(colors="white", labelsize=tick_label_fontsize)
     for spine in ax.spines.values():
         spine.set_color("white")
     ax.xaxis.label.set_color("white")
@@ -470,6 +472,12 @@ def main():
         max_value=24,
         value=16,
     )
+    tick_label_fontsize = st.sidebar.slider(
+        "X/Y tick label font size",
+        min_value=8,
+        max_value=20,
+        value=12,
+    )
     spectrum_linewidth = st.sidebar.slider(
         "Spectrum line width",
         min_value=0.5,
@@ -477,9 +485,9 @@ def main():
         value=1.8,
         step=0.1,
     )
-    spectrum_linecolor = st.sidebar.color_picker(
-        "Spectrum line color",
-        value="#ffd447",
+    smoothed_signal_color = st.sidebar.color_picker(
+        "Smoothed signal color",
+        value="#ff5a1f",
     )
     show_peak_labels = st.sidebar.checkbox(
         "Show peak transition and position labels",
@@ -560,7 +568,8 @@ def main():
                 axis_label_fontsize=axis_label_fontsize,
                 background_colormap=background_colormap,
                 spectrum_linewidth=spectrum_linewidth,
-                spectrum_linecolor=spectrum_linecolor,
+                smoothed_signal_color=smoothed_signal_color,
+                tick_label_fontsize=tick_label_fontsize,
                 show_peak_labels=show_peak_labels,
             )
             plot_bytes = plot_path.read_bytes()
