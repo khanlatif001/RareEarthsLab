@@ -593,7 +593,7 @@ def main():
             if df.attrs.get("axis") == "wavelength_nm":
                 wavelength_columns = st.sidebar.columns(2)
                 wavelength_min = wavelength_columns[0].number_input(
-                    "Emin (nm)",
+                    "E_min (nm)",
                     min_value=0.000001,
                     value=float(df["x"].min()),
                     step=1.0,
@@ -602,7 +602,7 @@ def main():
                     help="Lower wavelength bound for the displayed spectrum.",
                 )
                 wavelength_max = wavelength_columns[1].number_input(
-                    "Emax (nm)",
+                    "E_max (nm)",
                     min_value=0.000001,
                     value=float(df["x"].max()),
                     step=1.0,
@@ -611,26 +611,26 @@ def main():
                     help="Upper wavelength bound for the displayed spectrum.",
                 )
                 if wavelength_min >= wavelength_max:
-                    st.sidebar.error("Emin must be less than Emax.")
+                    st.sidebar.error("E_min must be less than E_max.")
                     st.stop()
                 x_axis_limits = (wavelength_min, wavelength_max)
             intensity_columns = st.sidebar.columns(2)
             intensity_min = intensity_columns[0].number_input(
-                "Intensitymin",
+                "Intensity_min",
                 value=float(df["intensity"].min()),
                 format="%.6f",
                 key=f"intensity_min_{spectrum_identity}",
                 help="Lower intensity bound for the displayed spectrum.",
             )
             intensity_max = intensity_columns[1].number_input(
-                "Intensitymax",
+                "Intensity_max",
                 value=float(df["intensity"].max()),
                 format="%.6f",
                 key=f"intensity_max_{spectrum_identity}",
                 help="Upper intensity bound for the displayed spectrum.",
             )
             if intensity_min > intensity_max:
-                st.sidebar.error("Intensitymin cannot exceed Intensitymax.")
+                st.sidebar.error("Intensity_min cannot exceed Intensity_max.")
                 st.stop()
             y_axis_limits = (intensity_min, intensity_max)
             applied_prominence = (

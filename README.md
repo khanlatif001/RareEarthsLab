@@ -52,10 +52,10 @@ Use the sidebar to adjust:
 - Smoothed-signal color.
 - Visibility of detected peak markers and their transition/position labels.
 - The intensity-background colormap.
-- **Emin (nm)** and **Emax (nm)** when the displayed x-axis is wavelength.
+- **E_min (nm)** and **E_max (nm)** when the displayed x-axis is wavelength.
   These fields default to the uploaded spectrum's wavelength range. Changing
   them updates the displayed plot and publication PNG.
-- **Intensitymin** and **Intensitymax**, which default to the spectrum's
+- **Intensity_min** and **Intensity_max**, which default to the spectrum's
   minimum and maximum counts. Changing them updates the displayed plot and
   publication PNG.
 
@@ -100,7 +100,7 @@ to analyze spectra in a browser without setting up a local Python environment.
 3. Set the smoothing and peak-detection parameters.
 4. Choose an ion and configure the transition-matching tolerance.
 5. Inspect the detected peaks, candidate matches, and annotated spectrum.
-6. Adjust plot appearance and, for wavelength plots, set Emin and Emax.
+6. Adjust plot appearance and, for wavelength plots, set E_min and E_max.
 7. Download the CSV results and publication-ready PNG.
 
 ## Run locally
