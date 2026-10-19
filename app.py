@@ -293,20 +293,30 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                  background_colormap="inferno", spectrum_linewidth=1.8,
                  smoothed_signal_color="#ff5a1f", tick_label_fontsize=12,
                  show_peak_labels=True, x_axis_limits=None, show_title=True,
-                 show_provisional_note=True):
+                 show_provisional_note=True, y_axis_limits=None):
     x = df["x"].to_numpy(float)
     y = df["intensity"].to_numpy(float)
     fig, ax = plt.subplots(figsize=(7, 4.5))
     fig.patch.set_facecolor("#050505")
     intensity_range = float(np.ptp(y))
     display_max = float(np.max(y))
+    plot_y_limits = y_axis_limits
+    if y_axis_limits is not None and y_axis_limits[0] == y_axis_limits[1]:
+        padding = max(abs(y_axis_limits[0]) * 0.01, 0.5)
+        plot_y_limits = (
+            y_axis_limits[0] - padding,
+            y_axis_limits[1] + padding,
+        )
     if intensity_range > 0 and display_max > 0:
         intensity_map = np.tile((y - np.min(y)) / intensity_range, (32, 1))
         x_edges = np.empty(x.size + 1)
         x_edges[1:-1] = (x[:-1] + x[1:]) / 2
         x_edges[0] = x[0] - (x[1] - x[0]) / 2
         x_edges[-1] = x[-1] + (x[-1] - x[-2]) / 2
-        y_edges = np.linspace(0, display_max * 1.08, intensity_map.shape[0] + 1)
+        background_min, background_max = (
+            plot_y_limits if plot_y_limits is not None else (0, display_max * 1.08)
+        )
+        y_edges = np.linspace(background_min, background_max, intensity_map.shape[0] + 1)
         ax.pcolormesh(x_edges, y_edges, intensity_map, shading="flat",
                       cmap=background_colormap, alpha=1.0, zorder=0)
         colorbar = fig.colorbar(
@@ -348,6 +358,8 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
         ax.set_xlim(*x_axis_limits)
     elif x.min() < 350 and x.max() > 900 and "Wavelength" in axis_label:
         ax.set_xlim(350, 900)
+    if plot_y_limits is not None:
+        ax.set_ylim(*plot_y_limits)
     ax.set_xlabel(axis_label, fontsize=axis_label_fontsize)
     ax.set_ylabel("Intensity (a.u.)", fontsize=axis_label_fontsize)
     if show_title:
@@ -602,6 +614,25 @@ def main():
                     st.sidebar.error("Emin must be less than Emax.")
                     st.stop()
                 x_axis_limits = (wavelength_min, wavelength_max)
+            intensity_columns = st.sidebar.columns(2)
+            intensity_min = intensity_columns[0].number_input(
+                "Intensitymin",
+                value=float(df["intensity"].min()),
+                format="%.6f",
+                key=f"intensity_min_{spectrum_identity}",
+                help="Lower intensity bound for the displayed spectrum.",
+            )
+            intensity_max = intensity_columns[1].number_input(
+                "Intensitymax",
+                value=float(df["intensity"].max()),
+                format="%.6f",
+                key=f"intensity_max_{spectrum_identity}",
+                help="Upper intensity bound for the displayed spectrum.",
+            )
+            if intensity_min > intensity_max:
+                st.sidebar.error("Intensitymin cannot exceed Intensitymax.")
+                st.stop()
+            y_axis_limits = (intensity_min, intensity_max)
             applied_prominence = (
                 prominence * (df["intensity"].max() - df["intensity"].min())
                 if relative_prominence
@@ -638,6 +669,7 @@ def main():
                 tick_label_fontsize=tick_label_fontsize,
                 show_peak_labels=show_peak_labels,
                 x_axis_limits=x_axis_limits,
+                y_axis_limits=y_axis_limits,
             )
             plot_bytes = plot_path.read_bytes()
             publication_plot_path = Path(temporary_directory) / "publication_spectrum.png"
@@ -656,6 +688,7 @@ def main():
                 tick_label_fontsize=tick_label_fontsize,
                 show_peak_labels=show_peak_labels,
                 x_axis_limits=x_axis_limits,
+                y_axis_limits=y_axis_limits,
                 show_title=False,
                 show_provisional_note=False,
             )

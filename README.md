@@ -55,6 +55,9 @@ Use the sidebar to adjust:
 - **Emin (nm)** and **Emax (nm)** when the displayed x-axis is wavelength.
   These fields default to the uploaded spectrum's wavelength range. Changing
   them updates the displayed plot and publication PNG.
+- **Intensitymin** and **Intensitymax**, which default to the spectrum's
+  minimum and maximum counts. Changing them updates the displayed plot and
+  publication PNG.
 
 The publication PNG is exported at **300 dpi** with a **7 × 4.5 inch** figure
 size. It omits the plot title and provisional-transcription note. Peak markers,
