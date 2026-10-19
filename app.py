@@ -278,7 +278,9 @@ def match_peaks(peaks, database, tolerance_cm1=None, max_matches=5,
     return pd.DataFrame(rows), catalog
 
 
-def plot_results(df, smoothed, peaks, matches, output_png, axis_label):
+def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
+                 peak_label_fontsize=10, axis_label_fontsize=16,
+                 background_colormap="inferno"):
     x = df["x"].to_numpy(float)
     y = df["intensity"].to_numpy(float)
     fig, ax = plt.subplots(figsize=(15, 7))
@@ -293,8 +295,10 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label):
         x_edges[-1] = x[-1] + (x[-1] - x[-2]) / 2
         y_edges = np.linspace(0, display_max * 1.08, intensity_map.shape[0] + 1)
         ax.pcolormesh(x_edges, y_edges, intensity_map, shading="flat",
-                      cmap="inferno", alpha=1.0, zorder=0)
-        colorbar = fig.colorbar(plt.cm.ScalarMappable(cmap="inferno"), ax=ax, pad=0.015)
+                      cmap=background_colormap, alpha=1.0, zorder=0)
+        colorbar = fig.colorbar(
+            plt.cm.ScalarMappable(cmap=background_colormap), ax=ax, pad=0.015
+        )
         colorbar.set_ticks([0, 1])
         colorbar.set_ticklabels(["Min", "Max"])
         colorbar.ax.tick_params(colors="white")
@@ -325,12 +329,12 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label):
             vertical_alignment = "bottom" if label_above else "top"
             ax.annotate(label, (p["x_peak"], p["intensity_smoothed"]),
                         xytext=offset, textcoords="offset points",
-                        fontsize=8, color=label_color, rotation=90,
+                        fontsize=peak_label_fontsize, color=label_color, rotation=90,
                         ha="center", va=vertical_alignment)
     if x.min() < 350 and x.max() > 900 and "Wavelength" in axis_label:
         ax.set_xlim(350, 900)
-    ax.set_xlabel(axis_label)
-    ax.set_ylabel("Intensity (a.u.)")
+    ax.set_xlabel(axis_label, fontsize=axis_label_fontsize)
+    ax.set_ylabel("Intensity (a.u.)", fontsize=axis_label_fontsize)
     ax.set_title("Emission spectrum with peak and transition labels", color="white")
     ax.tick_params(colors="white")
     for spine in ax.spines.values():
@@ -450,6 +454,34 @@ def main():
         max_value=10,
         value=5,
     )
+    st.sidebar.header("Plot appearance")
+    peak_label_fontsize = st.sidebar.slider(
+        "Peak label font size",
+        min_value=8,
+        max_value=20,
+        value=10,
+    )
+    axis_label_fontsize = st.sidebar.slider(
+        "X/Y axis label font size",
+        min_value=10,
+        max_value=24,
+        value=16,
+    )
+    colormap_options = {
+        "Inferno": "inferno",
+        "Viridis": "viridis",
+        "Plasma": "plasma",
+        "Magma": "magma",
+        "Cividis": "cividis",
+        "Turbo": "turbo",
+    }
+    background_colormap = colormap_options[
+        st.sidebar.selectbox(
+            "Intensity background colormap",
+            options=list(colormap_options),
+            index=0,
+        )
+    ]
 
     if uploaded_file is None:
         st.info("Upload a TXT, CSV or DAT spectrum using the sidebar to begin.")
@@ -506,6 +538,9 @@ def main():
                 matches,
                 plot_path,
                 df.attrs.get("axis_label", axis_options[axis_label]),
+                peak_label_fontsize=peak_label_fontsize,
+                axis_label_fontsize=axis_label_fontsize,
+                background_colormap=background_colormap,
             )
             plot_bytes = plot_path.read_bytes()
     except (OSError, ValueError, pd.errors.ParserError) as exc:
