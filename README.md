@@ -126,6 +126,16 @@ invoke the environment's Python directly with `.\.venv\Scripts\python.exe`.
 
 ## Reference data and scientific use
 
+### Recommended citation
+
+If you use RareEarthsLab in your research, please cite:
+
+Khan, L. U. et al. (2026). “Lighting up materials with X-rays: Advanced X-ray
+excited optical luminescence probe at the BM08-XAFS/XRF beamline, SESAME.”
+*IUCrJ*, **13**. [https://journals.iucr.org/m/issues/2026/06/00/ro5048/index.html](https://journals.iucr.org/m/issues/2026/06/00/ro5048/index.html)
+
+### Reference database
+
 The included reference database cites energy-level tables by Carnall, Goodman,
 Rajnak, and Rana (1989). Database coverage is partial; some entries are
 provisional transcriptions or inferred labels. Consult the original tables and

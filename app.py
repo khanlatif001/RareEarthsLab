@@ -704,6 +704,15 @@ def main():
         help="Exported at 300 dpi with a 7 x 4.5 inch figure size.",
     )
 
+    st.divider()
+    st.markdown(
+        "If you use RareEarthsLab in your research, please cite: "
+        "Khan, L. U. et al. (2026). “Lighting up materials with X-rays: "
+        "Advanced X-ray excited optical luminescence probe at the "
+        "BM08-XAFS/XRF beamline, SESAME.” *IUCrJ*, **13**. "
+        "[View the manuscript](https://journals.iucr.org/m/issues/2026/06/00/ro5048/index.html)"
+    )
+
 
 if __name__ == "__main__":
     main()
