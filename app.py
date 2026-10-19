@@ -365,8 +365,8 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
 
 
 def main():
-    st.set_page_config(page_title="LuminescenceLab: RareEarth Emission Spectral Analysis", layout="wide")
-    st.title("LuminescenceLab: Rare Earth Emission Spectral Analysis")
+    st.set_page_config(page_title="LuminescenceLab: RareEarth Spectral Analysis", layout="wide")
+    st.title("LuminescenceLab: Rare Earth Spectral Analysis")
     st.write(
         "Detect emission peaks and compare their transition energies with the "
         "available Carnall energy-level database."
