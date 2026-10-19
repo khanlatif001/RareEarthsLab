@@ -499,18 +499,43 @@ def main():
         value=True,
     )
     colormap_options = {
-        "Inferno": "inferno",
-        "Viridis": "viridis",
-        "Plasma": "plasma",
-        "Magma": "magma",
-        "Cividis": "cividis",
-        "Turbo": "turbo",
+        "Emission spectra — Inferno": "inferno",
+        "Emission spectra — Magma": "magma",
+        "Emission spectra — Plasma": "plasma",
+        "Emission spectra — Viridis": "viridis",
+        "Emission spectra — Turbo": "turbo",
+        "Emission spectra — Hot": "hot",
+        "Emission spectra — Cividis": "cividis",
+        "Scientific comparison — Coolwarm": "coolwarm",
+        "Scientific comparison — Seismic": "seismic",
+        "Scientific comparison — RdYlBu": "RdYlBu",
+        "Scientific comparison — Spectral": "Spectral",
+        "Intensity maps — YlGnBu": "YlGnBu",
+        "Intensity maps — YlOrRd": "YlOrRd",
+        "Intensity maps — Purples": "Purples",
+        "Intensity maps — Ocean": "ocean",
+        "Intensity maps — Terrain": "terrain",
+        "Intensity maps — Gist Earth": "gist_earth",
+        "Specialized — Rainbow": "rainbow",
+        "Specialized — HSV": "hsv",
+        "Specialized — Cool": "cool",
+        "Specialized — Twilight": "twilight",
+        "Specialized — Twilight Shifted": "twilight_shifted",
     }
     background_colormap = colormap_options[
         st.sidebar.selectbox(
             "Intensity background colormap",
             options=list(colormap_options),
             index=0,
+            help=(
+                "Emission spectra: inferno, magma, plasma, viridis, turbo, hot, "
+                "and cividis. Inferno and magma work especially well on dark "
+                "backgrounds. Scientific-comparison maps are better suited to "
+                "positive/negative residuals than ordinary intensity data. "
+                "Intensity-map palettes suit 2D distributions. Rainbow and HSV "
+                "can create misleading visual boundaries; twilight maps suit "
+                "cyclic data."
+            ),
         )
     ]
     x_axis_limits = None

@@ -7,3 +7,11 @@ color, peak transition/position label visibility, plus several
 intensity-background colormaps. For wavelength-axis plots, you can also set
 optional minimum and maximum wavelength limits. The annotated plot can be
 downloaded as a 300 dpi PNG sized 7 x 4.5 inches for manuscript use.
+
+The intensity-background colormap menu includes emission-spectrum palettes
+(Inferno, Magma, Plasma, Viridis, Turbo, Hot and Cividis), diverging comparison
+palettes (Coolwarm, Seismic, RdYlBu and Spectral), intensity-map palettes
+(YlGnBu, YlOrRd, Purples, Ocean, Terrain and Gist Earth), and specialized
+palettes (Rainbow, HSV, Cool, Twilight and Twilight Shifted). Inferno remains
+the default; diverging maps are intended for positive/negative comparisons,
+while Twilight maps are intended for cyclic data.
