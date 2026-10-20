@@ -37,7 +37,8 @@ browser-based interface.
   scan labels/overlay legend, set E_min and
   E_max and Intensity_min and Intensity_max, and adjust the shared x/y
   axis-label font size, shared x/y tick font size, and scan-label/legend font
-  size.
+  size. An optional intensity-background colormap can be enabled with the same
+  colormap choices as the single-spectrum plot.
 - Set individual peak integration limits in the editable table. Limits default
   to the detected peak's FWHM boundaries; the detected-peaks table and CSV
   report the trapezoidal area under the raw signal between those limits. The

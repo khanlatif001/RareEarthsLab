@@ -22,6 +22,32 @@ import matplotlib.pyplot as plt
 import streamlit as st
 
 
+BACKGROUND_COLORMAP_OPTIONS = {
+    "Emission spectra — Inferno": "inferno",
+    "Emission spectra — Magma": "magma",
+    "Emission spectra — Plasma": "plasma",
+    "Emission spectra — Viridis": "viridis",
+    "Emission spectra — Turbo": "turbo",
+    "Emission spectra — Hot": "hot",
+    "Emission spectra — Cividis": "cividis",
+    "Scientific comparison — Coolwarm": "coolwarm",
+    "Scientific comparison — Seismic": "seismic",
+    "Scientific comparison — RdYlBu": "RdYlBu",
+    "Scientific comparison — Spectral": "Spectral",
+    "Intensity maps — YlGnBu": "YlGnBu",
+    "Intensity maps — YlOrRd": "YlOrRd",
+    "Intensity maps — Purples": "Purples",
+    "Intensity maps — Ocean": "ocean",
+    "Intensity maps — Terrain": "terrain",
+    "Intensity maps — Gist Earth": "gist_earth",
+    "Specialized — Rainbow": "rainbow",
+    "Specialized — HSV": "hsv",
+    "Specialized — Cool": "cool",
+    "Specialized — Twilight": "twilight",
+    "Specialized — Twilight Shifted": "twilight_shifted",
+}
+
+
 def read_spectrum(path, axis="auto"):
     """Read a two-column whitespace/comma separated TXT/CSV spectrum."""
     df = pd.read_csv(path, sep=r"[\s,;]+", comment="#", header=None,
@@ -423,6 +449,8 @@ def plot_spectrum_comparison(
     y_tick_fontsize=12,
     legend_fontsize=10,
     dark_background=True,
+    show_intensity_background=False,
+    background_colormap="inferno",
 ):
     """Plot independent scans as an overlay or in vertically stacked axes."""
     if not spectra:
@@ -448,12 +476,49 @@ def plot_spectrum_comparison(
     foreground_color = "white" if dark_background else "black"
     legend_background = "#202020" if dark_background else "white"
     fig.patch.set_facecolor(background_color)
+    all_intensities = np.concatenate([
+        spectrum["intensity"].to_numpy(float) for _, spectrum in spectra
+    ])
+    intensity_min = float(np.min(all_intensities))
+    intensity_range = float(np.ptp(all_intensities))
+    intensity_max = float(np.max(all_intensities))
+    if intensity_range == 0:
+        intensity_range = 1.0
+    plot_y_min, plot_y_max = (
+        y_axis_limits
+        if y_axis_limits is not None
+        else (intensity_min, intensity_max)
+    )
+    if plot_y_min == plot_y_max:
+        padding = max(abs(plot_y_min) * 0.01, 0.5)
+        plot_y_min -= padding
+        plot_y_max += padding
     for index, (name, spectrum) in enumerate(spectra):
         ax = axes[0] if mode == "Overlay" else axes[index]
         ax.set_facecolor(background_color)
+        x_values = spectrum["x"].to_numpy(float)
+        y_values = spectrum["intensity"].to_numpy(float)
+        if show_intensity_background:
+            x_edges = np.empty(x_values.size + 1)
+            x_edges[1:-1] = (x_values[:-1] + x_values[1:]) / 2
+            x_edges[0] = x_values[0] - (x_values[1] - x_values[0]) / 2
+            x_edges[-1] = x_values[-1] + (x_values[-1] - x_values[-2]) / 2
+            intensity_map = np.tile(
+                (y_values - intensity_min) / intensity_range, (32, 1)
+            )
+            y_edges = np.linspace(plot_y_min, plot_y_max, 33)
+            ax.pcolormesh(
+                x_edges,
+                y_edges,
+                intensity_map,
+                shading="flat",
+                cmap=background_colormap,
+                alpha=0.3,
+                zorder=0,
+            )
         ax.plot(
-            spectrum["x"],
-            spectrum["intensity"],
+            x_values,
+            y_values,
             color=colors(index),
             linewidth=linewidth,
             label=name,
@@ -479,6 +544,18 @@ def plot_spectrum_comparison(
         if y_axis_limits is not None:
             ax.set_ylim(*y_axis_limits)
 
+    if show_intensity_background:
+        colorbar_ax = fig.add_axes([0.91, 0.15, 0.02, 0.7])
+        colorbar = fig.colorbar(
+            plt.cm.ScalarMappable(
+                norm=plt.Normalize(vmin=intensity_min, vmax=intensity_min + intensity_range),
+                cmap=background_colormap,
+            ),
+            cax=colorbar_ax,
+        )
+        colorbar.set_label("Intensity", color=foreground_color)
+        colorbar.ax.tick_params(colors=foreground_color)
+
     if mode == "Overlay":
         axes[0].set_ylabel(
             "Intensity (a.u.)",
@@ -500,7 +577,10 @@ def plot_spectrum_comparison(
         axis_label, color=foreground_color, fontsize=x_label_fontsize
     )
 
-    fig.tight_layout()
+    if show_intensity_background:
+        fig.subplots_adjust(left=0.12, right=0.88, bottom=0.12, top=0.96, hspace=0.12)
+    else:
+        fig.tight_layout()
     fig.savefig(output_png, dpi=300, facecolor=fig.get_facecolor())
     plt.close(fig)
 
@@ -583,6 +663,21 @@ def main():
                     value=True,
                     key=f"comparison_dark_background_{controls_key}",
                 )
+                show_intensity_background = st.sidebar.toggle(
+                    "Show intensity background colormap",
+                    value=False,
+                    key=f"comparison_intensity_background_{controls_key}",
+                )
+                background_colormap = "inferno"
+                if show_intensity_background:
+                    background_colormap = BACKGROUND_COLORMAP_OPTIONS[
+                        st.sidebar.selectbox(
+                            "Intensity background colormap",
+                            options=list(BACKGROUND_COLORMAP_OPTIONS),
+                            index=0,
+                            key=f"comparison_colormap_{controls_key}",
+                        )
+                    ]
                 show_scan_labels = st.sidebar.checkbox(
                     "Show scan labels / legend",
                     value=True,
@@ -682,6 +777,8 @@ def main():
                     y_tick_fontsize=tick_fontsize,
                     legend_fontsize=legend_fontsize,
                     dark_background=dark_background,
+                    show_intensity_background=show_intensity_background,
+                    background_colormap=background_colormap,
                 )
                 comparison_plot_bytes = comparison_plot_path.read_bytes()
         except (OSError, ValueError, pd.errors.ParserError) as exc:
@@ -804,34 +901,10 @@ def main():
         "Show detected peaks (markers and labels)",
         value=True,
     )
-    colormap_options = {
-        "Emission spectra — Inferno": "inferno",
-        "Emission spectra — Magma": "magma",
-        "Emission spectra — Plasma": "plasma",
-        "Emission spectra — Viridis": "viridis",
-        "Emission spectra — Turbo": "turbo",
-        "Emission spectra — Hot": "hot",
-        "Emission spectra — Cividis": "cividis",
-        "Scientific comparison — Coolwarm": "coolwarm",
-        "Scientific comparison — Seismic": "seismic",
-        "Scientific comparison — RdYlBu": "RdYlBu",
-        "Scientific comparison — Spectral": "Spectral",
-        "Intensity maps — YlGnBu": "YlGnBu",
-        "Intensity maps — YlOrRd": "YlOrRd",
-        "Intensity maps — Purples": "Purples",
-        "Intensity maps — Ocean": "ocean",
-        "Intensity maps — Terrain": "terrain",
-        "Intensity maps — Gist Earth": "gist_earth",
-        "Specialized — Rainbow": "rainbow",
-        "Specialized — HSV": "hsv",
-        "Specialized — Cool": "cool",
-        "Specialized — Twilight": "twilight",
-        "Specialized — Twilight Shifted": "twilight_shifted",
-    }
-    background_colormap = colormap_options[
+    background_colormap = BACKGROUND_COLORMAP_OPTIONS[
         st.sidebar.selectbox(
             "Intensity background colormap",
-            options=list(colormap_options),
+            options=list(BACKGROUND_COLORMAP_OPTIONS),
             index=0,
             help=(
                 "Emission spectra: inferno, magma, plasma, viridis, turbo, hot, "
