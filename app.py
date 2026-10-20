@@ -123,13 +123,18 @@ def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
     ys = savgol_filter(y, window_length=win, polyorder=min(polyorder, win-2))
     peaks, props = find_peaks(ys, prominence=prominence, distance=max(1, int(distance_points)),
                               height=min_height)
-    widths = peak_widths(ys, peaks, rel_height=0.5)[0] if len(peaks) else np.array([])
+    width_results = peak_widths(ys, peaks, rel_height=0.5) if len(peaks) else None
+    widths = width_results[0] if width_results is not None else np.array([])
     # Robust estimate of high-frequency residual noise; uncertainty is approximate,
     # intended as a diagnostic rather than a formal fit-derived confidence interval.
     residual = y - ys
     noise_sigma = 1.4826 * np.median(np.abs(residual - np.median(residual)))
     x_axis = df["x"].to_numpy(float)
     dx = float(np.median(np.diff(x_axis)))
+    left_x = (np.interp(width_results[2], np.arange(len(x_axis)), x_axis)
+              if width_results is not None else np.array([]))
+    right_x = (np.interp(width_results[3], np.arange(len(x_axis)), x_axis)
+               if width_results is not None else np.array([]))
     out = []
     for i, p in enumerate(peaks):
         row = {
@@ -142,6 +147,9 @@ def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
             "prominence": float(props["prominences"][i]),
             "width_points_fwhm_approx": float(widths[i]) if len(widths) else np.nan,
             "width_x_fwhm_approx": float(widths[i] * dx) if len(widths) else np.nan,
+            "integration_x1": float(left_x[i]),
+            "integration_x2": float(right_x[i]),
+            "integrated_area": np.nan,
             "x_uncertainty_approx": float(max(dx / 2.0, (widths[i] * dx) * noise_sigma /
                                                max(float(props["prominences"][i]), 1e-12)))
                                     if len(widths) else dx / 2.0,
@@ -150,6 +158,20 @@ def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
         }
         out.append(row)
     return ys, pd.DataFrame(out)
+
+
+def integrate_spectrum_interval(df, x1, x2):
+    """Integrate raw intensity between x limits, interpolating at both endpoints."""
+    x = df["x"].to_numpy(float)
+    intensity = df["intensity"].to_numpy(float)
+    if not np.isfinite(x1) or not np.isfinite(x2) or x1 >= x2:
+        raise ValueError("Integration limits must be finite and x1 must be less than x2.")
+    if x1 < x[0] or x2 > x[-1]:
+        raise ValueError(f"Integration limits must be within {x[0]:g} and {x[-1]:g}.")
+    interior = (x > x1) & (x < x2)
+    integration_x = np.concatenate(([x1], x[interior], [x2]))
+    integration_y = np.interp(integration_x, x, intensity)
+    return float(np.trapz(integration_y, x=integration_x))
 
 
 def build_transition_catalog(database, energy_field="observed_cm1", include_calculated=True):
@@ -709,7 +731,49 @@ def main():
 
     st.image(plot_bytes, caption="Annotated spectrum", use_container_width=True)
     st.subheader("Detected peaks")
-    st.dataframe(peaks, use_container_width=True)
+    if peaks.empty:
+        st.dataframe(peaks, use_container_width=True)
+    else:
+        st.caption("Integration limits (edit per peak)")
+        st.write(
+            "Integration limits start at each peak's FWHM boundaries. Edit x1 and "
+            "x2 for individual peaks; area uses the raw, un-baseline-corrected "
+            "intensity and trapezoidal integration."
+        )
+        bounds_columns = ["peak_id", "x_peak", "integration_x1", "integration_x2"]
+        integration_editor_key = (
+            f"peak_integration_{spectrum_identity}_{smooth_window}_"
+            f"{applied_prominence:.8g}_{distance_points}_{min_height}"
+        )
+        edited_bounds = st.data_editor(
+            peaks[bounds_columns],
+            column_config={
+                "integration_x1": st.column_config.NumberColumn(
+                    "Integration start (x1)", format="%.6f"
+                ),
+                "integration_x2": st.column_config.NumberColumn(
+                    "Integration end (x2)", format="%.6f"
+                ),
+            },
+            disabled=["peak_id", "x_peak"],
+            hide_index=True,
+            use_container_width=True,
+            key=integration_editor_key,
+        )
+        try:
+            peaks = peaks.copy()
+            peaks["integration_x1"] = edited_bounds["integration_x1"]
+            peaks["integration_x2"] = edited_bounds["integration_x2"]
+            peaks["integrated_area"] = [
+                integrate_spectrum_interval(
+                    df, float(row["integration_x1"]), float(row["integration_x2"])
+                )
+                for _, row in peaks.iterrows()
+            ]
+        except (TypeError, ValueError) as exc:
+            st.error(f"Could not calculate peak integrated area: {exc}")
+            st.stop()
+        st.dataframe(peaks, use_container_width=True)
     st.subheader("Transition candidates")
     st.dataframe(matches, use_container_width=True)
 

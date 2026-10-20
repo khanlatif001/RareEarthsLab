@@ -28,6 +28,11 @@ browser-based interface.
 - Tune peak prominence, minimum point separation, smoothing window, and
   optional minimum intensity.
 - Convert input positions to wavelength and photon wavenumber for comparison.
+- Set individual peak integration limits in the editable table. Limits default
+  to the detected peak's FWHM boundaries; the detected-peaks table and CSV
+  report the trapezoidal area under the raw signal between those limits. The
+  area is not baseline-corrected and has units of intensity multiplied by the
+  selected x-axis units.
 
 ### Candidate transition matching
 
@@ -99,7 +104,8 @@ to analyze spectra in a browser without setting up a local Python environment.
 2. Select the spectral coordinate or use automatic detection.
 3. Set the smoothing and peak-detection parameters.
 4. Choose an ion and configure the transition-matching tolerance.
-5. Inspect the detected peaks, candidate matches, and annotated spectrum.
+5. Edit per-peak integration limits if needed, then inspect the detected peaks,
+   candidate matches, and annotated spectrum.
 6. Adjust plot appearance and, for wavelength plots, set E_min and E_max.
 7. Download the CSV results and publication-ready PNG.
 
