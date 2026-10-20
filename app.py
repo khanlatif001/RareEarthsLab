@@ -459,14 +459,15 @@ def plot_spectrum_comparison(
         raise ValueError(f"Unsupported comparison layout {mode!r}.")
 
     colors = plt.get_cmap("tab20", len(spectra))
+    figure_width_inches = 7.0
     if mode == "Overlay":
-        fig, ax = plt.subplots(figsize=(9, 5.5))
+        fig, ax = plt.subplots(figsize=(figure_width_inches, 4.5))
         axes = [ax]
     else:
         fig, axes_array = plt.subplots(
             len(spectra),
             1,
-            figsize=(9, max(4.5, 2.5 * len(spectra))),
+            figsize=(figure_width_inches, max(4.5, 2.25 * len(spectra))),
             sharex=True,
             squeeze=False,
         )
@@ -553,7 +554,6 @@ def plot_spectrum_comparison(
             ),
             cax=colorbar_ax,
         )
-        colorbar.set_label("Intensity", color=foreground_color)
         colorbar.ax.tick_params(colors=foreground_color)
 
     if mode == "Overlay":
@@ -581,7 +581,12 @@ def plot_spectrum_comparison(
         fig.subplots_adjust(left=0.12, right=0.88, bottom=0.12, top=0.96, hspace=0.12)
     else:
         fig.tight_layout()
-    fig.savefig(output_png, dpi=300, facecolor=fig.get_facecolor())
+    fig.savefig(
+        output_png,
+        dpi=300,
+        facecolor=fig.get_facecolor(),
+        bbox_inches="tight",
+    )
     plt.close(fig)
 
 

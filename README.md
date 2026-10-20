@@ -79,6 +79,12 @@ The publication PNG is exported at **300 dpi** with a **7 × 4.5 inch** figure
 size. It omits the plot title and provisional-transcription note. Peak markers,
 peak labels, and the legend are included only when detected peaks are enabled.
 
+Multi-scan comparison plots are also exported at **300 dpi** and **7 inches
+wide** (double-column manuscript width). Overlay plots are **4.5 inches high**;
+stacked plots are at least **4.5 inches high** and allocate **2.25 inches per
+scan** when more height is needed. When the intensity colormap is enabled, its
+colorbar retains its scale but has no axis label.
+
 #### Available colormaps
 
 | Category | Colormaps |
