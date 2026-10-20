@@ -408,6 +408,66 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     plt.close(fig)
 
 
+def plot_spectrum_comparison(spectra, mode, output_png, axis_label, linewidth=1.8):
+    """Plot independent scans as an overlay or in vertically stacked axes."""
+    if not spectra:
+        raise ValueError("Upload at least one spectrum to plot.")
+    if mode not in {"Overlay", "Stacked"}:
+        raise ValueError(f"Unsupported comparison layout {mode!r}.")
+
+    colors = plt.get_cmap("tab20", len(spectra))
+    if mode == "Overlay":
+        fig, ax = plt.subplots(figsize=(9, 5.5))
+        axes = [ax]
+    else:
+        fig, axes_array = plt.subplots(
+            len(spectra),
+            1,
+            figsize=(9, max(4.5, 2.5 * len(spectra))),
+            sharex=True,
+            squeeze=False,
+        )
+        axes = list(axes_array[:, 0])
+
+    fig.patch.set_facecolor("#050505")
+    for index, (name, spectrum) in enumerate(spectra):
+        ax = axes[0] if mode == "Overlay" else axes[index]
+        ax.set_facecolor("#050505")
+        ax.plot(
+            spectrum["x"],
+            spectrum["intensity"],
+            color=colors(index),
+            linewidth=linewidth,
+            label=name,
+        )
+        ax.tick_params(colors="white")
+        ax.grid(color="white", alpha=0.18)
+        for spine in ax.spines.values():
+            spine.set_color("white")
+        ax.yaxis.label.set_color("white")
+        if mode == "Stacked":
+            ax.set_ylabel(name, color="white")
+
+    if mode == "Overlay":
+        axes[0].set_ylabel("Intensity (a.u.)", color="white")
+        axes[0].legend(
+            facecolor="#202020",
+            edgecolor="white",
+            labelcolor="white",
+            loc="best",
+        )
+    else:
+        axes[-1].set_xlabel(axis_label, color="white")
+        for ax in axes[:-1]:
+            ax.tick_params(labelbottom=False)
+    if mode == "Overlay":
+        axes[0].set_xlabel(axis_label, color="white")
+
+    fig.tight_layout()
+    fig.savefig(output_png, dpi=300, facecolor=fig.get_facecolor())
+    plt.close(fig)
+
+
 def main():
     st.set_page_config(page_title="LuminescenceLab: Rare Earth Spectral Analysis", layout="wide")
     st.title("LuminescenceLab: Rare Earth Spectral Analysis")
@@ -424,8 +484,8 @@ def main():
         st.error(f"Could not load the Carnall energy database: {exc}")
         st.stop()
 
-    uploaded_file = st.sidebar.file_uploader(
-        "Upload a spectrum", type=["txt", "csv", "dat"]
+    uploaded_files = st.sidebar.file_uploader(
+        "Upload spectrum(s)", type=["txt", "csv", "dat"], accept_multiple_files=True
     )
     axis_options = {
         "Automatic detection": "auto",
@@ -434,6 +494,57 @@ def main():
         "Photon energy (eV)": "energy_ev",
     }
     axis_label = st.sidebar.selectbox("Spectral position axis", list(axis_options))
+    if len(uploaded_files) > 1:
+        st.subheader("Scan comparison")
+        st.write(
+            "Each uploaded scan is plotted independently using its original "
+            "intensity values. No scans are combined, averaged, or normalized."
+        )
+        comparison_mode = st.radio(
+            "Plot layout",
+            ["Overlay", "Stacked"],
+            horizontal=True,
+        )
+        try:
+            with tempfile.TemporaryDirectory() as temporary_directory:
+                spectra = []
+                for index, uploaded_file in enumerate(uploaded_files):
+                    spectrum_path = Path(temporary_directory) / (
+                        f"scan_{index}{Path(uploaded_file.name).suffix}"
+                    )
+                    spectrum_path.write_bytes(uploaded_file.getvalue())
+                    spectra.append((
+                        uploaded_file.name,
+                        read_spectrum(spectrum_path, axis_options[axis_label]),
+                    ))
+                if len({spectrum.attrs.get("axis") for _, spectrum in spectra}) > 1:
+                    raise ValueError(
+                        "The scans were detected with different x-axis units. "
+                        "Choose one spectral coordinate for all files before plotting."
+                    )
+                comparison_plot_path = Path(temporary_directory) / "scan_comparison.png"
+                plot_spectrum_comparison(
+                    spectra,
+                    comparison_mode,
+                    comparison_plot_path,
+                    spectra[0][1].attrs.get(
+                        "axis_label", axis_options[axis_label]
+                    ),
+                    linewidth=1.8,
+                )
+                comparison_plot_bytes = comparison_plot_path.read_bytes()
+        except (OSError, ValueError, pd.errors.ParserError) as exc:
+            st.error(f"Could not plot the uploaded scans: {exc}")
+            st.stop()
+        st.image(comparison_plot_bytes, use_container_width=True)
+        st.download_button(
+            "Download comparison plot",
+            comparison_plot_bytes,
+            file_name="spectrum_comparison.png",
+            mime="image/png",
+        )
+        st.stop()
+    uploaded_file = uploaded_files[0] if uploaded_files else None
 
     st.sidebar.header("Peak Detection")
     smooth_window = st.sidebar.slider(
@@ -583,7 +694,7 @@ def main():
         )
     ]
     if uploaded_file is None:
-        st.info("Upload a TXT, CSV or DAT spectrum using the sidebar to begin.")
+        st.info("Upload one or more TXT, CSV or DAT spectra using the sidebar.")
         st.markdown("#### Supported input")
         st.write(
             "A text file with two columns: spectral position and intensity. "
