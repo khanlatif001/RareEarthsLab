@@ -628,8 +628,8 @@ def main():
     if len(uploaded_files) > 1:
         st.subheader("Spectra Comparison")
         st.write(
-            "Each uploaded scan is plotted independently using its original "
-            "intensity values. No scans are combined, averaged, or normalized."
+            "Each uploaded spectrum is plotted independently using its original "
+            "intensity values. No spectra are combined, averaged, or normalized."
         )
         comparison_mode = st.radio(
             "Plot layout",
@@ -654,7 +654,7 @@ def main():
                     ))
                 if len({spectrum.attrs.get("axis") for _, spectrum in spectra}) > 1:
                     raise ValueError(
-                        "The scans were detected with different x-axis units. "
+                        "The spectra were detected with different x-axis units. "
                         "Choose one spectral coordinate for all files before plotting."
                     )
                 all_x = np.concatenate([
