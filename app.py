@@ -1102,7 +1102,7 @@ def main():
     summary_columns[1].metric("Detected peaks", f"{len(peaks):,}")
     summary_columns[2].metric("Peaks with candidates", f"{matched_peak_count:,}")
 
-    st.image(plot_bytes, caption="Annotated spectrum", use_container_width=True)
+    st.image(plot_bytes, caption="Spectrum plot", use_container_width=True)
     st.subheader("Detected peaks")
     if peaks.empty:
         st.dataframe(peaks, use_container_width=True)
