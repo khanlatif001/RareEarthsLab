@@ -532,7 +532,7 @@ def main():
     }
     axis_label = st.sidebar.selectbox("Spectral position axis", list(axis_options))
     if len(uploaded_files) > 1:
-        st.subheader("Scan comparison")
+        st.subheader("Spectra Comparison")
         st.write(
             "Each uploaded scan is plotted independently using its original "
             "intensity values. No scans are combined, averaged, or normalized."
