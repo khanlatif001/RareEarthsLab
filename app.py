@@ -604,34 +604,19 @@ def main():
                     key=f"comparison_intensity_max_{controls_key}",
                 )
                 st.sidebar.subheader("Comparison Font Sizes")
-                x_label_fontsize = st.sidebar.slider(
-                    "X-axis label font size",
+                axis_label_fontsize = st.sidebar.slider(
+                    "Axis label font size",
                     min_value=8,
                     max_value=24,
                     value=16,
-                    key=f"comparison_x_label_fontsize_{controls_key}",
+                    key=f"comparison_axis_label_fontsize_{controls_key}",
                 )
-                y_label_fontsize = st.sidebar.slider(
-                    "Y-axis label font size",
-                    min_value=8,
-                    max_value=24,
-                    value=16,
-                    key=f"comparison_y_label_fontsize_{controls_key}",
-                )
-                tick_font_columns = st.sidebar.columns(2)
-                x_tick_fontsize = tick_font_columns[0].slider(
-                    "X tick font size",
+                tick_fontsize = st.sidebar.slider(
+                    "Tick font size",
                     min_value=6,
                     max_value=20,
                     value=12,
-                    key=f"comparison_x_tick_fontsize_{controls_key}",
-                )
-                y_tick_fontsize = tick_font_columns[1].slider(
-                    "Y tick font size",
-                    min_value=6,
-                    max_value=20,
-                    value=12,
-                    key=f"comparison_y_tick_fontsize_{controls_key}",
+                    key=f"comparison_tick_fontsize_{controls_key}",
                 )
                 if x_min >= x_max:
                     st.sidebar.error("E_min must be less than E_max.")
@@ -653,10 +638,10 @@ def main():
                     show_scan_labels=show_scan_labels,
                     x_axis_limits=(x_min, x_max),
                     y_axis_limits=(intensity_min, intensity_max),
-                    x_label_fontsize=x_label_fontsize,
-                    y_label_fontsize=y_label_fontsize,
-                    x_tick_fontsize=x_tick_fontsize,
-                    y_tick_fontsize=y_tick_fontsize,
+                    x_label_fontsize=axis_label_fontsize,
+                    y_label_fontsize=axis_label_fontsize,
+                    x_tick_fontsize=tick_fontsize,
+                    y_tick_fontsize=tick_fontsize,
                 )
                 comparison_plot_bytes = comparison_plot_path.read_bytes()
         except (OSError, ValueError, pd.errors.ParserError) as exc:
