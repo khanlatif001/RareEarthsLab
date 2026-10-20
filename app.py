@@ -422,6 +422,7 @@ def plot_spectrum_comparison(
     x_tick_fontsize=12,
     y_tick_fontsize=12,
     legend_fontsize=10,
+    dark_background=True,
 ):
     """Plot independent scans as an overlay or in vertically stacked axes."""
     if not spectra:
@@ -443,10 +444,13 @@ def plot_spectrum_comparison(
         )
         axes = list(axes_array[:, 0])
 
-    fig.patch.set_facecolor("#050505")
+    background_color = "#050505" if dark_background else "white"
+    foreground_color = "white" if dark_background else "black"
+    legend_background = "#202020" if dark_background else "white"
+    fig.patch.set_facecolor(background_color)
     for index, (name, spectrum) in enumerate(spectra):
         ax = axes[0] if mode == "Overlay" else axes[index]
-        ax.set_facecolor("#050505")
+        ax.set_facecolor(background_color)
         ax.plot(
             spectrum["x"],
             spectrum["intensity"],
@@ -455,19 +459,19 @@ def plot_spectrum_comparison(
             label=name,
         )
         ax.tick_params(
-            axis="x", colors="white", labelsize=x_tick_fontsize
+            axis="x", colors=foreground_color, labelsize=x_tick_fontsize
         )
         ax.tick_params(
-            axis="y", colors="white", labelsize=y_tick_fontsize
+            axis="y", colors=foreground_color, labelsize=y_tick_fontsize
         )
-        ax.grid(color="white", alpha=0.18)
+        ax.grid(color=foreground_color, alpha=0.18)
         for spine in ax.spines.values():
-            spine.set_color("white")
-        ax.yaxis.label.set_color("white")
+            spine.set_color(foreground_color)
+        ax.yaxis.label.set_color(foreground_color)
         if mode == "Stacked":
             ax.set_ylabel(
                 name if show_scan_labels else "Intensity (a.u.)",
-                color="white",
+                color=foreground_color,
                 fontsize=legend_fontsize if show_scan_labels else y_label_fontsize,
             )
         if x_axis_limits is not None:
@@ -477,13 +481,15 @@ def plot_spectrum_comparison(
 
     if mode == "Overlay":
         axes[0].set_ylabel(
-            "Intensity (a.u.)", color="white", fontsize=y_label_fontsize
+            "Intensity (a.u.)",
+            color=foreground_color,
+            fontsize=y_label_fontsize,
         )
         if show_scan_labels:
             axes[0].legend(
-                facecolor="#202020",
-                edgecolor="white",
-                labelcolor="white",
+                facecolor=legend_background,
+                edgecolor=foreground_color,
+                labelcolor=foreground_color,
                 loc="best",
                 fontsize=legend_fontsize,
             )
@@ -491,7 +497,7 @@ def plot_spectrum_comparison(
         for ax in axes[:-1]:
             ax.tick_params(labelbottom=False)
     axes[-1].set_xlabel(
-        axis_label, color="white", fontsize=x_label_fontsize
+        axis_label, color=foreground_color, fontsize=x_label_fontsize
     )
 
     fig.tight_layout()
@@ -572,6 +578,11 @@ def main():
                     intensity_default_max += intensity_padding
                 controls_key = comparison_identity.hexdigest()[:12]
                 st.sidebar.header("Comparison Plot Controls")
+                dark_background = st.sidebar.toggle(
+                    "Dark plot background",
+                    value=True,
+                    key=f"comparison_dark_background_{controls_key}",
+                )
                 show_scan_labels = st.sidebar.checkbox(
                     "Show scan labels / legend",
                     value=True,
@@ -670,6 +681,7 @@ def main():
                     x_tick_fontsize=tick_fontsize,
                     y_tick_fontsize=tick_fontsize,
                     legend_fontsize=legend_fontsize,
+                    dark_background=dark_background,
                 )
                 comparison_plot_bytes = comparison_plot_path.read_bytes()
         except (OSError, ValueError, pd.errors.ParserError) as exc:
