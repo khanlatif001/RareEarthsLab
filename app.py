@@ -363,7 +363,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     ax.set_xlabel(axis_label, fontsize=axis_label_fontsize)
     ax.set_ylabel("Intensity (a.u.)", fontsize=axis_label_fontsize)
     if show_title:
-        title = ("Emission spectrum with peak and transition labels"
+        title = ("Emission spectrum with peak and electronic transition labels"
                  if show_peak_labels else "Emission spectrum with detected peaks")
         ax.set_title(title, color="white")
     ax.tick_params(colors="white", labelsize=tick_label_fontsize)
