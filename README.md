@@ -66,7 +66,9 @@ Use the sidebar to adjust:
 
 - Dark or white plot background, plus an optional intensity-background
   colormap. White-background spectra use contrasting blue/orange lines with
-  dark, readable peak and transition labels.
+  dark, readable peak and transition labels. Peak annotations and plot legends
+  have transparent backgrounds and use foreground colors matched to the
+  selected plot background.
 - Peak-label font size, axis-label font size, and tick-label font size.
 - Line width shared by the experimental and smoothed signals.
 - Smoothed-signal color.

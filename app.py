@@ -351,7 +351,6 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     grid_color = "white" if dark_background else "#777777"
     experimental_color = "#ffd447" if dark_background else "#0072B2"
     line_color = smoothed_signal_color if dark_background else "#D55E00"
-    legend_background = "#202020" if dark_background else "white"
     fig.patch.set_facecolor(background_color)
     intensity_range = float(np.ptp(y))
     display_max = float(np.max(y))
@@ -409,8 +408,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
             ax.annotate(label, (p["x_peak"], p["intensity_smoothed"]),
                         xytext=offset, textcoords="offset points",
                         fontsize=peak_label_fontsize, color=foreground_color, rotation=90,
-                        bbox={"facecolor": background_color, "edgecolor": "none",
-                              "alpha": 0.75, "pad": 1.5},
+                        bbox={"facecolor": "none", "edgecolor": "none", "pad": 1.5},
                         ha="center", va=vertical_alignment)
     if x_axis_limits is not None:
         ax.set_xlim(*x_axis_limits)
@@ -431,7 +429,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     ax.yaxis.label.set_color(foreground_color)
     ax.grid(color=grid_color, alpha=0.2)
     if show_peak_labels:
-        ax.legend(facecolor=legend_background, edgecolor=foreground_color,
+        ax.legend(facecolor="none", edgecolor="none", framealpha=0,
                   labelcolor=foreground_color)
     transcription_status = matches.get("transcription_status", pd.Series(dtype=str)).fillna("").astype(str)
     if (show_provisional_note and
@@ -486,7 +484,6 @@ def plot_spectrum_comparison(
 
     background_color = "#050505" if dark_background else "white"
     foreground_color = "white" if dark_background else "black"
-    legend_background = "#202020" if dark_background else "white"
     fig.patch.set_facecolor(background_color)
     all_intensities = np.concatenate([
         spectrum["intensity"].to_numpy(float) for _, spectrum in spectra
@@ -575,8 +572,9 @@ def plot_spectrum_comparison(
         )
         if show_scan_labels:
             axes[0].legend(
-                facecolor=legend_background,
-                edgecolor=foreground_color,
+                facecolor="none",
+                edgecolor="none",
+                framealpha=0,
                 labelcolor=foreground_color,
                 loc="best",
                 fontsize=legend_fontsize,
