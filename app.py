@@ -458,7 +458,7 @@ def plot_spectrum_comparison(
     if mode not in {"Overlay", "Stacked"}:
         raise ValueError(f"Unsupported comparison layout {mode!r}.")
 
-    colors = plt.get_cmap("tab20", len(spectra))
+    color_palette = plt.get_cmap("tab20" if dark_background else "tab10")
     figure_width_inches = 7.0
     if mode == "Overlay":
         fig, ax = plt.subplots(figsize=(figure_width_inches, 4.5))
@@ -520,7 +520,7 @@ def plot_spectrum_comparison(
         ax.plot(
             x_values,
             y_values,
-            color=colors(index),
+            color=color_palette(index % (20 if dark_background else 10)),
             linewidth=linewidth,
             label=name,
         )
@@ -688,6 +688,14 @@ def main():
                     value=True,
                     key=f"comparison_labels_{controls_key}",
                 )
+                comparison_linewidth = st.sidebar.slider(
+                    "Spectrum line width",
+                    min_value=0.5,
+                    max_value=5.0,
+                    value=1.8,
+                    step=0.1,
+                    key=f"comparison_linewidth_{controls_key}",
+                )
                 st.sidebar.subheader("Editable Scan Labels")
                 scan_labels = []
                 for index, (filename, _) in enumerate(spectra):
@@ -772,7 +780,7 @@ def main():
                     spectra[0][1].attrs.get(
                         "axis_label", axis_options[axis_label]
                     ),
-                    linewidth=1.8,
+                    linewidth=comparison_linewidth,
                     show_scan_labels=show_scan_labels,
                     x_axis_limits=(x_min, x_max),
                     y_axis_limits=(intensity_min, intensity_max),
