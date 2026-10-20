@@ -64,6 +64,9 @@ peak-detection settings, and reference-data completeness.
 
 Use the sidebar to adjust:
 
+- Dark or white plot background, plus an optional intensity-background
+  colormap. White-background spectra use contrasting blue/orange lines with
+  dark, readable peak and transition labels.
 - Peak-label font size, axis-label font size, and tick-label font size.
 - Line width shared by the experimental and smoothed signals.
 - Smoothed-signal color.
@@ -76,9 +79,10 @@ Use the sidebar to adjust:
   minimum and maximum counts. Changing them updates the displayed plot and
   publication PNG.
 
-The publication PNG is exported at **300 dpi** with a **7 × 4.5 inch** figure
-size. It omits the plot title and provisional-transcription note. Peak markers,
-peak labels, and the legend are included only when detected peaks are enabled.
+The single-spectrum publication PNG is exported at **300 dpi** with a
+**7 × 4.5 inch** figure size. It omits the plot title and provisional-
+transcription note. Peak markers, peak labels, and the legend are included
+only when detected peaks are enabled.
 
 Multi-scan comparison plots are also exported at **300 dpi** and **7 inches
 wide** (double-column manuscript width). Overlay plots are **4.5 inches high**;

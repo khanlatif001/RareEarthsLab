@@ -341,11 +341,18 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                  background_colormap="inferno", spectrum_linewidth=1.8,
                  smoothed_signal_color="#ff5a1f", tick_label_fontsize=12,
                  show_peak_labels=True, x_axis_limits=None, show_title=True,
-                 show_provisional_note=True, y_axis_limits=None):
+                 show_provisional_note=True, y_axis_limits=None,
+                 dark_background=True, show_intensity_background=False):
     x = df["x"].to_numpy(float)
     y = df["intensity"].to_numpy(float)
     fig, ax = plt.subplots(figsize=(7, 4.5))
-    fig.patch.set_facecolor("#050505")
+    background_color = "#050505" if dark_background else "white"
+    foreground_color = "white" if dark_background else "black"
+    grid_color = "white" if dark_background else "#777777"
+    experimental_color = "#ffd447" if dark_background else "#0072B2"
+    line_color = smoothed_signal_color if dark_background else "#D55E00"
+    legend_background = "#202020" if dark_background else "white"
+    fig.patch.set_facecolor(background_color)
     intensity_range = float(np.ptp(y))
     display_max = float(np.max(y))
     plot_y_limits = y_axis_limits
@@ -355,7 +362,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
             y_axis_limits[0] - padding,
             y_axis_limits[1] + padding,
         )
-    if intensity_range > 0 and display_max > 0:
+    if show_intensity_background and intensity_range > 0:
         intensity_map = np.tile((y - np.min(y)) / intensity_range, (32, 1))
         x_edges = np.empty(x.size + 1)
         x_edges[1:-1] = (x[:-1] + x[1:]) / 2
@@ -372,15 +379,16 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
         )
         colorbar.set_ticks([0, 1])
         colorbar.set_ticklabels(["Min", "Max"])
-        colorbar.ax.tick_params(colors="white")
-    ax.set_facecolor("#050505")
-    ax.plot(x, y, lw=spectrum_linewidth, alpha=0.9, color="#ffd447",
+        colorbar.ax.tick_params(colors=foreground_color)
+    ax.set_facecolor(background_color)
+    ax.plot(x, y, lw=spectrum_linewidth, alpha=0.95, color=experimental_color,
             label="Experimental spectrum")
-    ax.plot(x, smoothed, lw=spectrum_linewidth, color=smoothed_signal_color,
+    ax.plot(x, smoothed, lw=spectrum_linewidth, color=line_color,
             label="Smoothed signal")
     if show_peak_labels and not peaks.empty:
         ax.scatter(peaks["x_peak"], peaks["intensity_smoothed"], s=24, zorder=4,
-                   marker="o", color="white", edgecolors="#ff5a1f", label="Detected peaks")
+                   marker="o", color="#F0E442" if dark_background else "#CC79A7",
+                   edgecolors=foreground_color, label="Detected peaks")
         # Label each detected peak; top candidate shown only if a plausible match exists.
         for _, p in peaks.iterrows():
             subset = matches[(matches["peak_id"] == p["peak_id"]) &
@@ -400,7 +408,9 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
             vertical_alignment = "bottom" if label_above else "top"
             ax.annotate(label, (p["x_peak"], p["intensity_smoothed"]),
                         xytext=offset, textcoords="offset points",
-                        fontsize=peak_label_fontsize, color="white", rotation=90,
+                        fontsize=peak_label_fontsize, color=foreground_color, rotation=90,
+                        bbox={"facecolor": background_color, "edgecolor": "none",
+                              "alpha": 0.75, "pad": 1.5},
                         ha="center", va=vertical_alignment)
     if x_axis_limits is not None:
         ax.set_xlim(*x_axis_limits)
@@ -413,20 +423,21 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     if show_title:
         title = ("Emission spectrum with peak and electronic transition labels"
                  if show_peak_labels else "Emission spectrum with detected peaks")
-        ax.set_title(title, color="white")
-    ax.tick_params(colors="white", labelsize=tick_label_fontsize)
+        ax.set_title(title, color=foreground_color)
+    ax.tick_params(colors=foreground_color, labelsize=tick_label_fontsize)
     for spine in ax.spines.values():
-        spine.set_color("white")
-    ax.xaxis.label.set_color("white")
-    ax.yaxis.label.set_color("white")
-    ax.grid(color="white", alpha=0.15)
+        spine.set_color(foreground_color)
+    ax.xaxis.label.set_color(foreground_color)
+    ax.yaxis.label.set_color(foreground_color)
+    ax.grid(color=grid_color, alpha=0.2)
     if show_peak_labels:
-        ax.legend(facecolor="#202020", edgecolor="white", labelcolor="white")
+        ax.legend(facecolor=legend_background, edgecolor=foreground_color,
+                  labelcolor=foreground_color)
     transcription_status = matches.get("transcription_status", pd.Series(dtype=str)).fillna("").astype(str)
     if (show_provisional_note and
             transcription_status.str.contains("provisional", case=False).any()):
         fig.text(0.5, 0.015, "Provisional database transcription; verify before scientific use.",
-                 ha="center", fontsize=8, color="white")
+                 ha="center", fontsize=8, color=foreground_color)
         fig.tight_layout(rect=(0, 0.04, 1, 1))
     else:
         fig.tight_layout()
@@ -881,6 +892,16 @@ def main():
         value=5,
     )
     st.sidebar.header("Plot Appearance")
+    dark_background = st.sidebar.toggle(
+        "Dark plot background",
+        value=True,
+        key="single_dark_background",
+    )
+    show_intensity_background = st.sidebar.toggle(
+        "Show intensity background colormap",
+        value=False,
+        key="single_intensity_background",
+    )
     peak_label_fontsize = st.sidebar.slider(
         "Peak label font size",
         min_value=6,
@@ -914,22 +935,24 @@ def main():
         "Show detected peaks (markers and labels)",
         value=True,
     )
-    background_colormap = BACKGROUND_COLORMAP_OPTIONS[
-        st.sidebar.selectbox(
-            "Intensity background colormap",
-            options=list(BACKGROUND_COLORMAP_OPTIONS),
-            index=0,
-            help=(
-                "Emission spectra: inferno, magma, plasma, viridis, turbo, hot, "
-                "and cividis. Inferno and magma work especially well on dark "
-                "backgrounds. Scientific-comparison maps are better suited to "
-                "positive/negative residuals than ordinary intensity data. "
-                "Intensity-map palettes suit 2D distributions. Rainbow and HSV "
-                "can create misleading visual boundaries; twilight maps suit "
-                "cyclic data."
-            ),
-        )
-    ]
+    background_colormap = "inferno"
+    if show_intensity_background:
+        background_colormap = BACKGROUND_COLORMAP_OPTIONS[
+            st.sidebar.selectbox(
+                "Intensity background colormap",
+                options=list(BACKGROUND_COLORMAP_OPTIONS),
+                index=0,
+                help=(
+                    "Emission spectra: inferno, magma, plasma, viridis, turbo, hot, "
+                    "and cividis. Inferno and magma work especially well on dark "
+                    "backgrounds. Scientific-comparison maps are better suited to "
+                    "positive/negative residuals than ordinary intensity data. "
+                    "Intensity-map palettes suit 2D distributions. Rainbow and HSV "
+                    "can create misleading visual boundaries; twilight maps suit "
+                    "cyclic data."
+                ),
+            )
+        ]
     if uploaded_file is None:
         st.info("Upload one or more TXT, CSV or DAT spectra using the sidebar.")
         st.markdown("#### Supported input")
@@ -1040,6 +1063,8 @@ def main():
                 show_peak_labels=show_peak_labels,
                 x_axis_limits=x_axis_limits,
                 y_axis_limits=y_axis_limits,
+                dark_background=dark_background,
+                show_intensity_background=show_intensity_background,
             )
             plot_bytes = plot_path.read_bytes()
             publication_plot_path = Path(temporary_directory) / "publication_spectrum.png"
@@ -1061,6 +1086,8 @@ def main():
                 y_axis_limits=y_axis_limits,
                 show_title=False,
                 show_provisional_note=False,
+                dark_background=dark_background,
+                show_intensity_background=show_intensity_background,
             )
             publication_plot_bytes = publication_plot_path.read_bytes()
     except (OSError, ValueError, pd.errors.ParserError) as exc:
