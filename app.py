@@ -408,7 +408,20 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     plt.close(fig)
 
 
-def plot_spectrum_comparison(spectra, mode, output_png, axis_label, linewidth=1.8):
+def plot_spectrum_comparison(
+    spectra,
+    mode,
+    output_png,
+    axis_label,
+    linewidth=1.8,
+    show_scan_labels=True,
+    x_axis_limits=None,
+    y_axis_limits=None,
+    x_label_fontsize=16,
+    y_label_fontsize=16,
+    x_tick_fontsize=12,
+    y_tick_fontsize=12,
+):
     """Plot independent scans as an overlay or in vertically stacked axes."""
     if not spectra:
         raise ValueError("Upload at least one spectrum to plot.")
@@ -440,28 +453,44 @@ def plot_spectrum_comparison(spectra, mode, output_png, axis_label, linewidth=1.
             linewidth=linewidth,
             label=name,
         )
-        ax.tick_params(colors="white")
+        ax.tick_params(
+            axis="x", colors="white", labelsize=x_tick_fontsize
+        )
+        ax.tick_params(
+            axis="y", colors="white", labelsize=y_tick_fontsize
+        )
         ax.grid(color="white", alpha=0.18)
         for spine in ax.spines.values():
             spine.set_color("white")
         ax.yaxis.label.set_color("white")
         if mode == "Stacked":
-            ax.set_ylabel(name, color="white")
+            ax.set_ylabel(
+                name if show_scan_labels else "Intensity (a.u.)",
+                color="white",
+                fontsize=y_label_fontsize,
+            )
+        if x_axis_limits is not None:
+            ax.set_xlim(*x_axis_limits)
+        if y_axis_limits is not None:
+            ax.set_ylim(*y_axis_limits)
 
     if mode == "Overlay":
-        axes[0].set_ylabel("Intensity (a.u.)", color="white")
-        axes[0].legend(
-            facecolor="#202020",
-            edgecolor="white",
-            labelcolor="white",
-            loc="best",
+        axes[0].set_ylabel(
+            "Intensity (a.u.)", color="white", fontsize=y_label_fontsize
         )
+        if show_scan_labels:
+            axes[0].legend(
+                facecolor="#202020",
+                edgecolor="white",
+                labelcolor="white",
+                loc="best",
+            )
     else:
-        axes[-1].set_xlabel(axis_label, color="white")
         for ax in axes[:-1]:
             ax.tick_params(labelbottom=False)
-    if mode == "Overlay":
-        axes[0].set_xlabel(axis_label, color="white")
+    axes[-1].set_xlabel(
+        axis_label, color="white", fontsize=x_label_fontsize
+    )
 
     fig.tight_layout()
     fig.savefig(output_png, dpi=300, facecolor=fig.get_facecolor())
@@ -508,11 +537,15 @@ def main():
         try:
             with tempfile.TemporaryDirectory() as temporary_directory:
                 spectra = []
+                comparison_identity = hashlib.sha256()
                 for index, uploaded_file in enumerate(uploaded_files):
+                    file_data = uploaded_file.getvalue()
+                    comparison_identity.update(uploaded_file.name.encode("utf-8"))
+                    comparison_identity.update(file_data)
                     spectrum_path = Path(temporary_directory) / (
                         f"scan_{index}{Path(uploaded_file.name).suffix}"
                     )
-                    spectrum_path.write_bytes(uploaded_file.getvalue())
+                    spectrum_path.write_bytes(file_data)
                     spectra.append((
                         uploaded_file.name,
                         read_spectrum(spectrum_path, axis_options[axis_label]),
@@ -522,6 +555,92 @@ def main():
                         "The scans were detected with different x-axis units. "
                         "Choose one spectral coordinate for all files before plotting."
                     )
+                all_x = np.concatenate([
+                    spectrum["x"].to_numpy(float) for _, spectrum in spectra
+                ])
+                all_intensity = np.concatenate([
+                    spectrum["intensity"].to_numpy(float)
+                    for _, spectrum in spectra
+                ])
+                intensity_default_min = float(all_intensity.min())
+                intensity_default_max = float(all_intensity.max())
+                if intensity_default_min == intensity_default_max:
+                    intensity_padding = max(abs(intensity_default_min) * 0.01, 0.5)
+                    intensity_default_min -= intensity_padding
+                    intensity_default_max += intensity_padding
+                controls_key = comparison_identity.hexdigest()[:12]
+                st.sidebar.header("Comparison Plot Controls")
+                show_scan_labels = st.sidebar.checkbox(
+                    "Show scan labels / legend",
+                    value=True,
+                    key=f"comparison_labels_{controls_key}",
+                )
+                x_limit_columns = st.sidebar.columns(2)
+                x_min = x_limit_columns[0].number_input(
+                    "E_min",
+                    value=float(all_x.min()),
+                    format="%.6f",
+                    key=f"comparison_xmin_{controls_key}",
+                    help="Lower plot limit in the selected spectral coordinate.",
+                )
+                x_max = x_limit_columns[1].number_input(
+                    "E_max",
+                    value=float(all_x.max()),
+                    format="%.6f",
+                    key=f"comparison_xmax_{controls_key}",
+                    help="Upper plot limit in the selected spectral coordinate.",
+                )
+                intensity_limit_columns = st.sidebar.columns(2)
+                intensity_min = intensity_limit_columns[0].number_input(
+                    "Intensity_min",
+                    value=intensity_default_min,
+                    format="%.6f",
+                    key=f"comparison_intensity_min_{controls_key}",
+                )
+                intensity_max = intensity_limit_columns[1].number_input(
+                    "Intensity_max",
+                    value=intensity_default_max,
+                    format="%.6f",
+                    key=f"comparison_intensity_max_{controls_key}",
+                )
+                st.sidebar.subheader("Comparison Font Sizes")
+                x_label_fontsize = st.sidebar.slider(
+                    "X-axis label font size",
+                    min_value=8,
+                    max_value=24,
+                    value=16,
+                    key=f"comparison_x_label_fontsize_{controls_key}",
+                )
+                y_label_fontsize = st.sidebar.slider(
+                    "Y-axis label font size",
+                    min_value=8,
+                    max_value=24,
+                    value=16,
+                    key=f"comparison_y_label_fontsize_{controls_key}",
+                )
+                tick_font_columns = st.sidebar.columns(2)
+                x_tick_fontsize = tick_font_columns[0].slider(
+                    "X tick font size",
+                    min_value=6,
+                    max_value=20,
+                    value=12,
+                    key=f"comparison_x_tick_fontsize_{controls_key}",
+                )
+                y_tick_fontsize = tick_font_columns[1].slider(
+                    "Y tick font size",
+                    min_value=6,
+                    max_value=20,
+                    value=12,
+                    key=f"comparison_y_tick_fontsize_{controls_key}",
+                )
+                if x_min >= x_max:
+                    st.sidebar.error("E_min must be less than E_max.")
+                    st.stop()
+                if intensity_min >= intensity_max:
+                    st.sidebar.error(
+                        "Intensity_min must be less than Intensity_max."
+                    )
+                    st.stop()
                 comparison_plot_path = Path(temporary_directory) / "scan_comparison.png"
                 plot_spectrum_comparison(
                     spectra,
@@ -531,6 +650,13 @@ def main():
                         "axis_label", axis_options[axis_label]
                     ),
                     linewidth=1.8,
+                    show_scan_labels=show_scan_labels,
+                    x_axis_limits=(x_min, x_max),
+                    y_axis_limits=(intensity_min, intensity_max),
+                    x_label_fontsize=x_label_fontsize,
+                    y_label_fontsize=y_label_fontsize,
+                    x_tick_fontsize=x_tick_fontsize,
+                    y_tick_fontsize=y_tick_fontsize,
                 )
                 comparison_plot_bytes = comparison_plot_path.read_bytes()
         except (OSError, ValueError, pd.errors.ParserError) as exc:
