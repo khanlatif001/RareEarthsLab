@@ -39,16 +39,16 @@ def read_spectrum(path, axis="auto"):
     if axis == "wavelength_nm":
         if np.any(x <= 0): raise ValueError("Wavelengths must be positive.")
         df["wavelength_nm"] = x
-        df["photon_cm1"] = 1e7 / x
+        df["wavenumber_cm1"] = 1e7 / x
         label = "Wavelength (nm)"
     elif axis == "wavenumber_cm1":
         if np.any(x <= 0): raise ValueError("Wavenumbers must be positive.")
-        df["photon_cm1"] = x
+        df["wavenumber_cm1"] = x
         df["wavelength_nm"] = 1e7 / x
         label = "Wavenumber (cm$^{-1}$)"
     elif axis == "energy_ev":
         if np.any(x <= 0): raise ValueError("Photon energies must be positive.")
-        df["photon_cm1"] = x * 8065.544005
+        df["wavenumber_cm1"] = x * 8065.544005
         df["wavelength_nm"] = 1239.841984 / x
         label = "Photon energy (eV)"
     else:
@@ -136,7 +136,7 @@ def detect_peaks(df, axis="wavelength_nm", smooth_window= 9, polyorder=3,
             "peak_id": int(i+1),
             "x_peak": float(df.iloc[p]["x"]),
             "wavelength_nm": float(df.iloc[p]["wavelength_nm"]),
-            "photon_cm1": float(df.iloc[p]["photon_cm1"]),
+            "wavenumber_cm1": float(df.iloc[p]["wavenumber_cm1"]),
             "intensity_raw": float(y[p]),
             "intensity_smoothed": float(ys[p]),
             "prominence": float(props["prominences"][i]),
@@ -249,7 +249,7 @@ def match_peaks(peaks, database, tolerance_cm1=None, max_matches=5,
             rows.append(row)
             continue
         catalog = catalog.copy()
-        catalog["delta_cm1"] = catalog["transition_cm1"] - float(peak["photon_cm1"])
+        catalog["delta_cm1"] = catalog["transition_cm1"] - float(peak["wavenumber_cm1"])
         catalog["abs_delta_cm1"] = catalog["delta_cm1"].abs()
         catalog["reference_wavelength_nm"] = 1e7 / catalog["transition_cm1"]
         catalog["delta_nm"] = (catalog["reference_wavelength_nm"] -
@@ -273,7 +273,7 @@ def match_peaks(peaks, database, tolerance_cm1=None, max_matches=5,
                 "peak_id": int(peak["peak_id"]), "match_rank": rank, "status": status,
                 "ion": tr["ion"], "upper_state": tr["upper_state"], "lower_state": tr["lower_state"],
                 "observed_wavelength_nm": float(peak["wavelength_nm"]),
-                "observed_photon_cm1": float(peak["photon_cm1"]),
+                "observed_wavenumber_cm1": float(peak["wavenumber_cm1"]),
                 "reference_transition_cm1": float(tr["transition_cm1"]),
                 "reference_wavelength_nm": float(tr["reference_wavelength_nm"]),
                 "delta_reference_minus_observed_nm": float(tr["delta_nm"]),
