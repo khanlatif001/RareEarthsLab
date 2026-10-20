@@ -33,9 +33,9 @@ browser-based interface.
   intensities, with no averaging, combining, normalization, or interpolation.
   All scans must use the same x-axis coordinate; choose it explicitly if
   automatic detection assigns different units. Comparison controls let you
-  hide the scan labels/overlay legend, set E_min and E_max and
-  Intensity_min and Intensity_max, and adjust the shared x/y axis-label font
-  size and shared x/y tick font size.
+  edit each scan's label, hide the scan labels/overlay legend, set E_min and
+  E_max and Intensity_min and Intensity_max, and adjust the shared x/y
+  axis-label font size and shared x/y tick font size.
 - Set individual peak integration limits in the editable table. Limits default
   to the detected peak's FWHM boundaries; the detected-peaks table and CSV
   report the trapezoidal area under the raw signal between those limits. The

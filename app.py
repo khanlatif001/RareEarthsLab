@@ -575,6 +575,24 @@ def main():
                     value=True,
                     key=f"comparison_labels_{controls_key}",
                 )
+                st.sidebar.subheader("Editable Scan Labels")
+                scan_labels = []
+                for index, (filename, _) in enumerate(spectra):
+                    scan_label = st.sidebar.text_input(
+                        f"Label for {filename}",
+                        value=Path(filename).stem,
+                        key=f"comparison_scan_label_{controls_key}_{index}",
+                    ).strip()
+                    if not scan_label:
+                        st.sidebar.error(
+                            f"Enter a label for scan {filename}, or remove the file."
+                        )
+                        st.stop()
+                    scan_labels.append(scan_label)
+                spectra = [
+                    (scan_labels[index], spectrum)
+                    for index, (_, spectrum) in enumerate(spectra)
+                ]
                 x_limit_columns = st.sidebar.columns(2)
                 x_min = x_limit_columns[0].number_input(
                     "E_min",
