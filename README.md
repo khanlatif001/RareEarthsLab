@@ -1,7 +1,7 @@
 # LuminescenceLab
 
-**A free web application for rare-earth emission spectroscopy and peak /
-transition identification.**
+**A free web application for rare earth emission spectroscopy and peak /
+electronic transition identification.**
 
 [![Launch LuminescenceLab](https://img.shields.io/badge/Launch-LuminescenceLab-168B8B?style=for-the-badge)](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
 
