@@ -421,6 +421,7 @@ def plot_spectrum_comparison(
     y_label_fontsize=16,
     x_tick_fontsize=12,
     y_tick_fontsize=12,
+    legend_fontsize=10,
 ):
     """Plot independent scans as an overlay or in vertically stacked axes."""
     if not spectra:
@@ -467,7 +468,7 @@ def plot_spectrum_comparison(
             ax.set_ylabel(
                 name if show_scan_labels else "Intensity (a.u.)",
                 color="white",
-                fontsize=y_label_fontsize,
+                fontsize=legend_fontsize if show_scan_labels else y_label_fontsize,
             )
         if x_axis_limits is not None:
             ax.set_xlim(*x_axis_limits)
@@ -484,6 +485,7 @@ def plot_spectrum_comparison(
                 edgecolor="white",
                 labelcolor="white",
                 loc="best",
+                fontsize=legend_fontsize,
             )
     else:
         for ax in axes[:-1]:
@@ -636,6 +638,13 @@ def main():
                     value=12,
                     key=f"comparison_tick_fontsize_{controls_key}",
                 )
+                legend_fontsize = st.sidebar.slider(
+                    "Scan label / legend font size",
+                    min_value=6,
+                    max_value=20,
+                    value=10,
+                    key=f"comparison_legend_fontsize_{controls_key}",
+                )
                 if x_min >= x_max:
                     st.sidebar.error("E_min must be less than E_max.")
                     st.stop()
@@ -660,6 +669,7 @@ def main():
                     y_label_fontsize=axis_label_fontsize,
                     x_tick_fontsize=tick_fontsize,
                     y_tick_fontsize=tick_fontsize,
+                    legend_fontsize=legend_fontsize,
                 )
                 comparison_plot_bytes = comparison_plot_path.read_bytes()
         except (OSError, ValueError, pd.errors.ParserError) as exc:
