@@ -767,7 +767,7 @@ def main():
                     key=f"comparison_tick_fontsize_{controls_key}",
                 )
                 legend_fontsize = st.sidebar.slider(
-                    "Scan label / legend font size",
+                    "Label / legend font size",
                     min_value=6,
                     max_value=20,
                     value=10,
@@ -781,7 +781,7 @@ def main():
                         "Intensity_min must be less than Intensity_max."
                     )
                     st.stop()
-                comparison_plot_path = Path(temporary_directory) / "scan_comparison.png"
+                comparison_plot_path = Path(temporary_directory) / "spectrum_comparison.png"
                 plot_spectrum_comparison(
                     spectra,
                     comparison_mode,
