@@ -342,7 +342,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
                 m = subset.iloc[0]
                 label = (f'{format_ion(m["ion"])} {format_state(m["upper_state"])} → '
                          f'{format_state(m["lower_state"])}\n'
-                         f'ref {m["reference_wavelength_nm"]:.1f} nm '
+                         f'Ref {m["reference_wavelength_nm"]:.1f} nm '
                          f'(Δ {m["delta_reference_minus_observed_nm"]:+.1f} nm)')
             else:
                 label = f'Peak {int(p["peak_id"])}: no database match'
