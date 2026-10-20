@@ -350,7 +350,7 @@ def plot_results(df, smoothed, peaks, matches, output_png, axis_label,
     foreground_color = "white" if dark_background else "black"
     grid_color = "white" if dark_background else "#777777"
     experimental_color = "#ffd447" if dark_background else "#0072B2"
-    line_color = smoothed_signal_color if dark_background else "#D55E00"
+    line_color = smoothed_signal_color
     fig.patch.set_facecolor(background_color)
     intensity_range = float(np.ptp(y))
     display_max = float(np.max(y))
