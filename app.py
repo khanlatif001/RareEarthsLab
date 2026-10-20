@@ -171,7 +171,7 @@ def integrate_spectrum_interval(df, x1, x2):
     interior = (x > x1) & (x < x2)
     integration_x = np.concatenate(([x1], x[interior], [x2]))
     integration_y = np.interp(integration_x, x, intensity)
-    return float(np.trapz(integration_y, x=integration_x))
+    return float(np.trapezoid(integration_y, x=integration_x))
 
 
 def build_transition_catalog(database, energy_field="observed_cm1", include_calculated=True):
