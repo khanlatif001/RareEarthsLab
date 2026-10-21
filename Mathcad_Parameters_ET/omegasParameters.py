@@ -11,7 +11,7 @@ class Inputs:
     Transition5D0_7F1: float = 592.8
     Transition5D0_7F2: float = 612.1
     Transition5D0_7F4: float = 700.9
-    Transition5D0_7F6: float = 592.57
+    Transition5D0_7F6: float = 810.0
 
     # Integrated area of each transition peak (S)
     S5D0_7F0: float = 5731.1925

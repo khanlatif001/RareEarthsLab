@@ -1202,7 +1202,7 @@ def main():
             min_value=0.000001,
             value=jo_defaults.Transition5D0_7F6,
             format="%.10g",
-            key=f"{jo_widget_key}_Transition5D0_7F6",
+            key=f"{jo_widget_key}_Transition5D0_7F6_810nm",
         ),
     }
 
@@ -1270,11 +1270,8 @@ def main():
         tau_s=lifetime_s,
     )
     jo_results = calculate_judd_ofelt(jo_inputs)
-    st.caption(
-        "The reported scaled values follow the supplied script: "
-        "Ωᵢ × 10²⁰. As in that script, A_rad is A01 + A02 + A04 and excludes A06."
-    )
-    result_columns = st.columns(3)
+    st.subheader("Result of calculated Judd-Ofelt (JO) parameters")
+    result_columns = st.columns(4)
     for column, label, scaled_key, raw_key in (
         (result_columns[0], "Ω₂ × 10²⁰", "rho2", "Omega2"),
         (result_columns[1], "Ω₄ × 10²⁰", "rho4", "Omega4"),
@@ -1282,6 +1279,10 @@ def main():
     ):
         column.metric(label, f"{jo_results[scaled_key]:.10g}")
         column.caption(f"Unscaled Ω = {jo_results[raw_key]:.10g}")
+    result_columns[3].metric(
+        "Intrinsic quantum yield (%)",
+        f"{jo_results['eta_percent']:.10g}%",
+    )
 
     with st.expander("View all quantities calculated by the JO script"):
         result_names = {
