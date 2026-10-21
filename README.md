@@ -178,14 +178,12 @@ Khan, L. U. et al. (2026). “Lighting up materials with X-rays: Advanced X-ray
 excited optical luminescence probe at the BM08-XAFS/XRF beamline, SESAME.”
 *IUCrJ*, **13**. [https://journals.iucr.org/m/issues/2026/06/00/ro5048/index.html](https://journals.iucr.org/m/issues/2026/06/00/ro5048/index.html)
 
-For work involving rare-earth complexes and functionalized Fe₃O₄
-nanomarkers, also cite:
+For work involving calculation of Judd-Ofelt (JO) parameters, also cite:
 
-Khan, L. U.; Brito, H. F.; Hölsä, J.; Pirota, K. R.; Muraca, D.; Felinto,
-M. C. F. C.; Teotonio, E. E. S.; Malta, O. L. (2014). “Red-green emitting
-and superparamagnetic nanomarkers containing Fe₃O₄ functionalized with
-calixarene and rare earth complexes.” *Inorganic Chemistry*, **53**(24),
-12902–12910. [https://doi.org/10.1021/ic5018856](https://doi.org/10.1021/ic5018856)
+Khan, L. U. et al. (2014). “Red-green emitting and superparamagnetic
+nanomarkers containing Fe₃O₄ functionalized with calixarene and rare earth
+complexes.” *Inorganic Chemistry*, **53**(24), 12902–12910.
+[https://doi.org/10.1021/ic5018856](https://doi.org/10.1021/ic5018856)
 
 ### Reference database
 
