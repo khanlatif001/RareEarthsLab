@@ -53,11 +53,33 @@ BACKGROUND_COLORMAP_OPTIONS = {
 
 
 def read_spectrum(path, axis="auto"):
-    """Read a two-column whitespace/comma separated TXT/CSV spectrum."""
-    df = pd.read_csv(path, sep=r"[\s,;]+", comment="#", header=None,
-                     engine="python", usecols=[0, 1], names=["x", "intensity"])
-    df["x"] = pd.to_numeric(df["x"], errors="coerce")
-    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce")
+    """Read numeric spectrum rows from whitespace/comma/semicolon text files."""
+    spectrum_rows = []
+    data_started = False
+    with Path(path).open("r", encoding="utf-8-sig") as spectrum_file:
+        for line_number, line in enumerate(spectrum_file, start=1):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            fields = [field for field in re.split(r"[\s,;]+", line) if field]
+            if len(fields) < 2:
+                if data_started:
+                    raise ValueError(
+                        f"Expected two numeric spectrum columns on line {line_number}."
+                    )
+                continue
+            try:
+                x_value, intensity = float(fields[0]), float(fields[1])
+            except ValueError as exc:
+                if data_started:
+                    raise ValueError(
+                        f"Expected two numeric spectrum columns on line {line_number}."
+                    ) from exc
+                continue
+            data_started = True
+            spectrum_rows.append((x_value, intensity))
+
+    df = pd.DataFrame(spectrum_rows, columns=["x", "intensity"])
     df = df.dropna().sort_values("x").drop_duplicates("x").reset_index(drop=True)
     if len(df) < 5:
         raise ValueError("Spectrum contains fewer than five valid data points.")

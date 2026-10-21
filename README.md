@@ -21,7 +21,8 @@ browser-based interface.
 ### Spectrum analysis
 
 - Upload two-column TXT, CSV, or DAT files. Whitespace-, comma-, and
-  semicolon-separated input is supported.
+  semicolon-separated input is supported. Non-numeric instrument metadata
+  before the spectrum data is ignored.
 - Use wavelength (nm), wavenumber (cm⁻¹), or photon energy (eV) as the spectral
   coordinate, or let the application infer the axis from the data.
 - Smooth the signal with a Savitzky–Golay filter before detecting peaks.
