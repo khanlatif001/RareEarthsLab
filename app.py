@@ -1103,52 +1103,61 @@ def main():
     summary_columns[2].metric("Peaks with candidates", f"{matched_peak_count:,}")
 
     st.image(plot_bytes, caption="Spectrum plot", use_container_width=True)
-    st.subheader("Detected peaks")
+    st.caption("Integration limits (edit per peak)")
+    st.write(
+        "Limits default to each peak's FWHM boundaries. Area uses the raw, "
+        "un-baseline-corrected intensity and trapezoidal integration."
+    )
+    table_columns = st.columns([0.7, 1.0, 1.5, 1.5, 1.2])
+    for column, label in zip(
+        table_columns,
+        (
+            "Peak_id",
+            "X_peak",
+            "Integration start (X1)",
+            "Integration end (X2)",
+            "Integrated area",
+        ),
+    ):
+        column.markdown(f"**{label}**")
+
+    peaks = peaks.copy()
+    integration_editor_key = (
+        f"peak_integration_{spectrum_identity}_{smooth_window}_"
+        f"{applied_prominence:.8g}_{distance_points}_{min_height}"
+    )
     if peaks.empty:
-        st.dataframe(peaks, use_container_width=True)
+        st.write("No peaks detected.")
     else:
-        st.caption("Integration limits (edit per peak)")
-        st.write(
-            "Integration limits start at each peak's FWHM boundaries. Edit x1 and "
-            "x2 for individual peaks; area uses the raw, un-baseline-corrected "
-            "intensity and trapezoidal integration."
-        )
-        bounds_columns = ["peak_id", "x_peak", "integration_x1", "integration_x2"]
-        integration_editor_key = (
-            f"peak_integration_{spectrum_identity}_{smooth_window}_"
-            f"{applied_prominence:.8g}_{distance_points}_{min_height}"
-        )
-        edited_bounds = st.data_editor(
-            peaks[bounds_columns],
-            column_config={
-                "integration_x1": st.column_config.NumberColumn(
-                    "Integration start (x1)", format="%.6f"
-                ),
-                "integration_x2": st.column_config.NumberColumn(
-                    "Integration end (x2)", format="%.6f"
-                ),
-            },
-            disabled=["peak_id", "x_peak"],
-            hide_index=True,
-            use_container_width=True,
-            key=integration_editor_key,
-        )
-        try:
-            peaks = peaks.copy()
-            peaks["integration_x1"] = edited_bounds["integration_x1"]
-            peaks["integration_x2"] = edited_bounds["integration_x2"]
-            peaks["integrated_area"] = [
-                integrate_spectrum_interval(
-                    df, float(row["integration_x1"]), float(row["integration_x2"])
+        for index, peak in peaks.iterrows():
+            row_columns = st.columns([0.7, 1.0, 1.5, 1.5, 1.2])
+            row_columns[0].write(int(peak["peak_id"]))
+            row_columns[1].write(f"{peak['x_peak']:.6f}")
+            integration_x1 = row_columns[2].number_input(
+                "Integration start (X1)",
+                value=float(peak["integration_x1"]),
+                format="%.6f",
+                label_visibility="collapsed",
+                key=f"{integration_editor_key}_{int(peak['peak_id'])}_x1",
+            )
+            integration_x2 = row_columns[3].number_input(
+                "Integration end (X2)",
+                value=float(peak["integration_x2"]),
+                format="%.6f",
+                label_visibility="collapsed",
+                key=f"{integration_editor_key}_{int(peak['peak_id'])}_x2",
+            )
+            try:
+                integrated_area = integrate_spectrum_interval(
+                    df, integration_x1, integration_x2
                 )
-                for _, row in peaks.iterrows()
-            ]
-        except (TypeError, ValueError) as exc:
-            st.error(f"Could not calculate peak integrated area: {exc}")
-            st.stop()
-        st.dataframe(peaks, use_container_width=True)
-    st.subheader("Transition candidates")
-    st.dataframe(matches, use_container_width=True)
+            except (TypeError, ValueError) as exc:
+                st.error(f"Could not calculate peak integrated area: {exc}")
+                st.stop()
+            row_columns[4].write(f"{integrated_area:.6g}")
+            peaks.at[index, "integration_x1"] = integration_x1
+            peaks.at[index, "integration_x2"] = integration_x2
+            peaks.at[index, "integrated_area"] = integrated_area
 
     downloads = st.columns(5)
     downloads[0].download_button(

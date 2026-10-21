@@ -41,10 +41,12 @@ browser-based interface.
   line palette. An optional intensity-background colormap can be enabled with
   the same colormap choices as the single-spectrum plot.
 - Set individual peak integration limits in the editable table. Limits default
-  to the detected peak's FWHM boundaries; the detected-peaks table and CSV
-  report the trapezoidal area under the raw signal between those limits. The
-  area is not baseline-corrected and has units of intensity multiplied by the
-  selected x-axis units.
+  to the detected peak's FWHM boundaries. The table displays each peak ID,
+  peak position, editable integration limits, and the trapezoidal area under
+  the raw signal between those limits. The area is not baseline-corrected and
+  has units of intensity multiplied by the selected x-axis units. Detected
+  peaks and transition candidates are available as CSV downloads rather than
+  additional on-screen tables.
 
 ### Candidate transition matching
 
@@ -54,8 +56,8 @@ browser-based interface.
   tolerance (cm⁻¹).
 - Select an ion, infer an ion from the uploaded filename where possible, or
   search across the available ions.
-- Inspect candidate states, reference wavelengths, energy differences, and
-  available source and transcription details.
+- Download candidate states, reference wavelengths, energy differences, and
+  available source and transcription details in the transition-match CSV.
 
 The quality and coverage of matches depend on experimental calibration,
 peak-detection settings, and reference-data completeness.
@@ -129,8 +131,8 @@ to analyze spectra in a browser without setting up a local Python environment.
 2. Select the spectral coordinate or use automatic detection.
 3. Set the smoothing and peak-detection parameters.
 4. Choose an ion and configure the transition-matching tolerance.
-5. Edit per-peak integration limits if needed, then inspect the detected peaks,
-   candidate matches, and annotated spectrum.
+5. Edit per-peak integration limits if needed, then inspect the integrated
+   areas and annotated spectrum.
 6. Adjust plot appearance and, for wavelength plots, set E_min and E_max.
 7. Download the CSV results and publication-ready PNG.
 
