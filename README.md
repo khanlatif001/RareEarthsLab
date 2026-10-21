@@ -66,6 +66,9 @@ peak-detection settings, and reference-data completeness.
 
 Use the sidebar to adjust:
 
+- Hover over a spectrum curve to display its X and Y values. The interactive
+  chart supports both single-spectrum analysis and multi-scan comparisons;
+  publication-ready PNG downloads remain available.
 - Dark or white plot background, plus an optional intensity-background
   colormap. White-background spectra use contrasting blue/orange lines with
   dark, readable peak and transition labels. Peak annotations and plot legends
