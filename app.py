@@ -1284,7 +1284,7 @@ def main():
         f"{jo_results['eta_percent']:.10g}%",
     )
 
-    with st.expander("View all quantities calculated by the JO Theory"):
+    with st.expander("View all parameters calculated by the JO theory"):
         result_names = {
             "sigma01_cm^-1": "σ(⁵D₀→⁷F₁) (cm⁻¹)",
             "sigma02_cm^-1": "σ(⁵D₀→⁷F₂) (cm⁻¹)",
