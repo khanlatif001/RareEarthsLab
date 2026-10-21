@@ -19,8 +19,6 @@ import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks, peak_widths, savgol_filter
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import streamlit as st
 
 
@@ -601,143 +599,6 @@ def plot_spectrum_comparison(
     plt.close(fig)
 
 
-def make_interactive_spectrum_figure(
-    spectra,
-    axis_label,
-    mode="Overlay",
-    smoothed=None,
-    peaks=None,
-    x_axis_limits=None,
-    y_axis_limits=None,
-    dark_background=True,
-    linewidth=1.8,
-    show_legend=True,
-):
-    """Build an interactive spectrum chart with X/Y hover readouts."""
-    if not spectra:
-        raise ValueError("Upload at least one spectrum to plot.")
-    if mode not in {"Overlay", "Stacked"}:
-        raise ValueError(f"Unsupported comparison layout {mode!r}.")
-
-    stacked = mode == "Stacked"
-    figure = make_subplots(
-        rows=len(spectra) if stacked else 1,
-        cols=1,
-        shared_xaxes=stacked,
-        vertical_spacing=0.04 if stacked and len(spectra) > 1 else 0,
-    )
-    palette = plt.get_cmap("tab20" if dark_background else "tab10")
-    for index, (name, spectrum) in enumerate(spectra):
-        row = index + 1 if stacked else 1
-        color = palette(index % (20 if dark_background else 10))
-        color = "#{:02x}{:02x}{:02x}".format(
-            *(int(channel * 255) for channel in color[:3])
-        )
-        x_values = spectrum["x"].to_numpy(float)
-        y_values = spectrum["intensity"].to_numpy(float)
-        figure.add_trace(
-            go.Scatter(
-                x=x_values,
-                y=y_values,
-                mode="lines",
-                name=name,
-                line={"color": color, "width": linewidth},
-                hovertemplate=(
-                    "X: %{x:.6f}<br>Y: %{y:.6g}<extra>%{fullData.name}</extra>"
-                ),
-            ),
-            row=row,
-            col=1,
-        )
-        if smoothed is not None:
-            figure.add_trace(
-                go.Scatter(
-                    x=x_values,
-                    y=smoothed,
-                    mode="lines",
-                    name="Smoothed signal",
-                    line={"color": "#ff5a1f", "width": linewidth},
-                    hovertemplate=(
-                        "X: %{x:.6f}<br>Y: %{y:.6g}"
-                        "<extra>%{fullData.name}</extra>"
-                    ),
-                ),
-                row=row,
-                col=1,
-            )
-        if stacked:
-            figure.update_yaxes(
-                title_text=name if len(spectra) > 1 else "Intensity (a.u.)",
-                row=row,
-                col=1,
-            )
-
-    if peaks is not None and not peaks.empty:
-        figure.add_trace(
-            go.Scatter(
-                x=peaks["x_peak"],
-                y=peaks["intensity_smoothed"],
-                mode="markers",
-                name="Detected peaks",
-                marker={
-                    "color": "#F0E442",
-                    "size": 8,
-                    "line": {"color": "white", "width": 1},
-                },
-                customdata=peaks[["peak_id", "wavelength_nm"]].to_numpy(),
-                hovertemplate=(
-                    "Peak %{customdata[0]}<br>X: %{x:.6f}<br>Y: %{y:.6g}"
-                    "<br>Wavelength: %{customdata[1]:.4f} nm<extra></extra>"
-                ),
-            ),
-            row=1,
-            col=1,
-        )
-
-    background_color = "#050505" if dark_background else "white"
-    foreground_color = "white" if dark_background else "black"
-    if x_axis_limits is None and not stacked and "Wavelength" in axis_label:
-        x_values = spectra[0][1]["x"].to_numpy(float)
-        if x_values.min() < 350 and x_values.max() > 900:
-            x_axis_limits = (350, 900)
-    if (
-        y_axis_limits is not None
-        and y_axis_limits[0] == y_axis_limits[1]
-    ):
-        padding = max(abs(y_axis_limits[0]) * 0.01, 0.5)
-        y_axis_limits = (
-            y_axis_limits[0] - padding,
-            y_axis_limits[1] + padding,
-        )
-
-    figure.update_layout(
-        template="plotly_dark" if dark_background else "plotly_white",
-        paper_bgcolor=background_color,
-        plot_bgcolor=background_color,
-        font={"color": foreground_color},
-        hovermode="x",
-        showlegend=show_legend,
-        margin={"t": 30, "r": 20, "b": 50, "l": 65},
-        legend={"orientation": "h", "y": 1.02, "x": 0},
-    )
-    figure.update_xaxes(
-        title_text=axis_label,
-        showspikes=True,
-        spikemode="across",
-        spikesnap="cursor",
-        showgrid=True,
-        gridcolor="rgba(128,128,128,0.25)",
-        range=x_axis_limits,
-    )
-    figure.update_yaxes(
-        title_text="Intensity (a.u.)" if not stacked else None,
-        showgrid=True,
-        gridcolor="rgba(128,128,128,0.25)",
-        range=y_axis_limits,
-    )
-    return figure
-
-
 def main():
     st.set_page_config(page_title="LuminescenceLab: Rare Earth Spectral Analysis", layout="wide")
     st.title("LuminescenceLab: Rare Earth Spectral Analysis")
@@ -945,18 +806,7 @@ def main():
         except (OSError, ValueError, pd.errors.ParserError) as exc:
             st.error(f"Could not plot the uploaded scans: {exc}")
             st.stop()
-        comparison_figure = make_interactive_spectrum_figure(
-            spectra,
-            spectra[0][1].attrs.get("axis_label", axis_options[axis_label]),
-            mode=comparison_mode,
-            x_axis_limits=(x_min, x_max),
-            y_axis_limits=(intensity_min, intensity_max),
-            dark_background=dark_background,
-            linewidth=comparison_linewidth,
-            show_legend=show_scan_labels,
-        )
-        st.plotly_chart(comparison_figure, use_container_width=True)
-        st.caption("Hover over a curve to inspect its X and Y values.")
+        st.image(comparison_plot_bytes, use_container_width=True)
         st.download_button(
             "Download comparison plot",
             comparison_plot_bytes,
@@ -1252,18 +1102,7 @@ def main():
     summary_columns[1].metric("Detected peaks", f"{len(peaks):,}")
     summary_columns[2].metric("Peaks with candidates", f"{matched_peak_count:,}")
 
-    interactive_figure = make_interactive_spectrum_figure(
-        [("Experimental spectrum", df)],
-        df.attrs.get("axis_label", axis_options[axis_label]),
-        smoothed=smoothed,
-        peaks=peaks if show_peak_labels else None,
-        x_axis_limits=x_axis_limits,
-        y_axis_limits=y_axis_limits,
-        dark_background=dark_background,
-        linewidth=spectrum_linewidth,
-    )
-    st.plotly_chart(interactive_figure, use_container_width=True)
-    st.caption("Hover over a curve to inspect its X and Y values.")
+    st.image(plot_bytes, caption="Spectrum plot", use_container_width=True)
     st.caption("Integration limits (edit per peak)")
     st.write(
         "Limits default to each peak's FWHM boundaries. Area uses the raw, "
