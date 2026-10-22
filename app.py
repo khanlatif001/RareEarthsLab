@@ -20,7 +20,7 @@ import pandas as pd
 from scipy.signal import find_peaks, peak_widths, savgol_filter
 import matplotlib.pyplot as plt
 import streamlit as st
-from Mathcad_Parameters_ET.omegasParameters import (
+from Judd_Ofelt.omega_parameters import (
     Inputs as JuddOfeltInputs,
     calculate as calculate_judd_ofelt,
 )
