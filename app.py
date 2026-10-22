@@ -1185,161 +1185,163 @@ def main():
             peaks.at[index, "integration_x2"] = integration_x2
             peaks.at[index, "integrated_area"] = integrated_area
 
-    st.subheader("Judd–Ofelt parameters (Eu³⁺)")
-    st.write(
-        "Edit the transition wavelengths, integrated peak areas, refractive "
-        "index, and lifetime below. The fields start with the supplied default "
-        "values and are not automatically copied from the per-peak integration "
-        "table. Verify that entered areas and units match the JO model."
-    )
-    jo_defaults = JuddOfeltInputs()
-    jo_widget_key = f"judd_ofelt_{spectrum_identity}"
-
-    st.caption("Electronic transition positions (nm)")
-    wavelength_columns = st.columns(4)
-    transition_wavelengths = {
-        "Transition5D0_7F1": wavelength_columns[0].number_input(
-            "⁵D₀ → ⁷F₁",
-            min_value=0.000001,
-            value=jo_defaults.Transition5D0_7F1,
-            format="%.10g",
-            key=f"{jo_widget_key}_Transition5D0_7F1",
-        ),
-        "Transition5D0_7F2": wavelength_columns[1].number_input(
-            "⁵D₀ → ⁷F₂",
-            min_value=0.000001,
-            value=jo_defaults.Transition5D0_7F2,
-            format="%.10g",
-            key=f"{jo_widget_key}_Transition5D0_7F2",
-        ),
-        "Transition5D0_7F4": wavelength_columns[2].number_input(
-            "⁵D₀ → ⁷F₄",
-            min_value=0.000001,
-            value=jo_defaults.Transition5D0_7F4,
-            format="%.10g",
-            key=f"{jo_widget_key}_Transition5D0_7F4",
-        ),
-        "Transition5D0_7F6": wavelength_columns[3].number_input(
-            "⁵D₀ → ⁷F₆",
-            min_value=0.000001,
-            value=jo_defaults.Transition5D0_7F6,
-            format="%.10g",
-            key=f"{jo_widget_key}_Transition5D0_7F6_810nm",
-        ),
-    }
-
-    st.caption("Integrated transition peak areas (S)")
-    area_columns = st.columns(5)
-    transition_areas = {
-        "S5D0_7F0": area_columns[0].number_input(
-            "S(⁵D₀ → ⁷F₀)",
-            min_value=0.0,
-            value=jo_defaults.S5D0_7F0,
-            format="%.10g",
-            key=f"{jo_widget_key}_S5D0_7F0",
-        ),
-        "S5D0_7F1": area_columns[1].number_input(
-            "S(⁵D₀ → ⁷F₁)",
-            min_value=0.000000000001,
-            value=jo_defaults.S5D0_7F1,
-            format="%.10g",
-            key=f"{jo_widget_key}_S5D0_7F1",
-        ),
-        "S5D0_7F2": area_columns[2].number_input(
-            "S(⁵D₀ → ⁷F₂)",
-            min_value=0.000000000001,
-            value=jo_defaults.S5D0_7F2,
-            format="%.10g",
-            key=f"{jo_widget_key}_S5D0_7F2",
-        ),
-        "S5D0_7F4": area_columns[3].number_input(
-            "S(⁵D₀ → ⁷F₄)",
-            min_value=0.0,
-            value=jo_defaults.S5D0_7F4,
-            format="%.10g",
-            key=f"{jo_widget_key}_S5D0_7F4",
-        ),
-        "S5D0_7F6": area_columns[4].number_input(
-            "S(⁵D₀ → ⁷F₆)",
-            min_value=0.0,
-            value=jo_defaults.S5D0_7F6,
-            format="%.10g",
-            key=f"{jo_widget_key}_S5D0_7F6",
-        ),
-    }
-
-    st.caption("Refractive index and lifetime")
-    material_columns = st.columns(2)
-    refractive_index = material_columns[0].number_input(
-        "Refractive index (n)",
-        min_value=0.000000000001,
-        value=jo_defaults.n,
-        format="%.10g",
-        key=f"{jo_widget_key}_n",
-    )
-    lifetime_s = material_columns[1].number_input(
-        "Lifetime (τ, s)",
-        min_value=0.000000000001,
-        value=jo_defaults.tau_s,
-        format="%.10g",
-        key=f"{jo_widget_key}_tau_s",
-    )
-
-    jo_inputs = JuddOfeltInputs(
-        **transition_wavelengths,
-        **transition_areas,
-        n=refractive_index,
-        tau_s=lifetime_s,
-    )
-    jo_results = calculate_judd_ofelt(jo_inputs)
-    st.subheader("Result of calculated Judd-Ofelt (JO) parameters")
-    result_columns = st.columns(4)
-    for column, label, scaled_key, raw_key in (
-        (result_columns[0], "Ω₂ × 10²⁰", "rho2", "Omega2"),
-        (result_columns[1], "Ω₄ × 10²⁰", "rho4", "Omega4"),
-        (result_columns[2], "Ω₆ × 10²⁰", "rho6", "Omega6"),
-    ):
-        column.metric(label, f"{jo_results[scaled_key]:.10g}")
-        column.caption(f"Unscaled Ω = {jo_results[raw_key]:.10g}")
-    result_columns[3].metric(
-        "Intrinsic quantum yield (%)",
-        f"{jo_results['eta_percent']:.10g}%",
-    )
-
-    with st.expander("View all parameters calculated by the JO theory"):
-        result_names = {
-            "sigma01_cm^-1": "σ(⁵D₀→⁷F₁) (cm⁻¹)",
-            "sigma02_cm^-1": "σ(⁵D₀→⁷F₂) (cm⁻¹)",
-            "sigma04_cm^-1": "σ(⁵D₀→⁷F₄) (cm⁻¹)",
-            "sigma06_cm^-1": "σ(⁵D₀→⁷F₆) (cm⁻¹)",
-            "chi": "Refractive-index correction (χ)",
-            "A01": "A(⁵D₀→⁷F₁)",
-            "A02": "A(⁵D₀→⁷F₂)",
-            "A04": "A(⁵D₀→⁷F₄)",
-            "A06": "A(⁵D₀→⁷F₆)",
-            "Omega2": "Unscaled Ω₂",
-            "Omega4": "Unscaled Ω₄",
-            "Omega6": "Unscaled Ω₆",
-            "rho2": "Ω₂ × 10²⁰",
-            "rho4": "Ω₄ × 10²⁰",
-            "rho6": "Ω₆ × 10²⁰",
-            "R02": "S(⁵D₀→⁷F₀) / S(⁵D₀→⁷F₂)",
-            "Arad": "Radiative transition probability (A_rad)",
-            "Atotal": "Total transition probability (A_total)",
-            "Anr": "Non-radiative transition probability (A_nr)",
-            "eta_percent": "Intrinsic quantum yield (%)",
-            "nH2O": "nH₂O",
-        }
-        st.dataframe(
-            pd.DataFrame(
-                {
-                    "Quantity": [result_names[name] for name in jo_results],
-                    "Value": [value for value in jo_results.values()],
-                }
-            ),
-            hide_index=True,
-            use_container_width=True,
+    show_judd_ofelt = uploaded_file is not None and ion_filter == "Eu3+"
+    if show_judd_ofelt:
+        st.subheader("Judd–Ofelt parameters (Eu³⁺)")
+        st.write(
+            "Edit the transition wavelengths, integrated peak areas, refractive "
+            "index, and lifetime below. The fields start with the supplied default "
+            "values and are not automatically copied from the per-peak integration "
+            "table. Verify that entered areas and units match the JO model."
         )
+        jo_defaults = JuddOfeltInputs()
+        jo_widget_key = f"judd_ofelt_{spectrum_identity}"
+
+        st.caption("Electronic transition positions (nm)")
+        wavelength_columns = st.columns(4)
+        transition_wavelengths = {
+            "Transition5D0_7F1": wavelength_columns[0].number_input(
+                "⁵D₀ → ⁷F₁",
+                min_value=0.000001,
+                value=jo_defaults.Transition5D0_7F1,
+                format="%.10g",
+                key=f"{jo_widget_key}_Transition5D0_7F1",
+            ),
+            "Transition5D0_7F2": wavelength_columns[1].number_input(
+                "⁵D₀ → ⁷F₂",
+                min_value=0.000001,
+                value=jo_defaults.Transition5D0_7F2,
+                format="%.10g",
+                key=f"{jo_widget_key}_Transition5D0_7F2",
+            ),
+            "Transition5D0_7F4": wavelength_columns[2].number_input(
+                "⁵D₀ → ⁷F₄",
+                min_value=0.000001,
+                value=jo_defaults.Transition5D0_7F4,
+                format="%.10g",
+                key=f"{jo_widget_key}_Transition5D0_7F4",
+            ),
+            "Transition5D0_7F6": wavelength_columns[3].number_input(
+                "⁵D₀ → ⁷F₆",
+                min_value=0.000001,
+                value=jo_defaults.Transition5D0_7F6,
+                format="%.10g",
+                key=f"{jo_widget_key}_Transition5D0_7F6_810nm",
+            ),
+        }
+
+        st.caption("Integrated transition peak areas (S)")
+        area_columns = st.columns(5)
+        transition_areas = {
+            "S5D0_7F0": area_columns[0].number_input(
+                "S(⁵D₀ → ⁷F₀)",
+                min_value=0.0,
+                value=jo_defaults.S5D0_7F0,
+                format="%.10g",
+                key=f"{jo_widget_key}_S5D0_7F0",
+            ),
+            "S5D0_7F1": area_columns[1].number_input(
+                "S(⁵D₀ → ⁷F₁)",
+                min_value=0.000000000001,
+                value=jo_defaults.S5D0_7F1,
+                format="%.10g",
+                key=f"{jo_widget_key}_S5D0_7F1",
+            ),
+            "S5D0_7F2": area_columns[2].number_input(
+                "S(⁵D₀ → ⁷F₂)",
+                min_value=0.000000000001,
+                value=jo_defaults.S5D0_7F2,
+                format="%.10g",
+                key=f"{jo_widget_key}_S5D0_7F2",
+            ),
+            "S5D0_7F4": area_columns[3].number_input(
+                "S(⁵D₀ → ⁷F₄)",
+                min_value=0.0,
+                value=jo_defaults.S5D0_7F4,
+                format="%.10g",
+                key=f"{jo_widget_key}_S5D0_7F4",
+            ),
+            "S5D0_7F6": area_columns[4].number_input(
+                "S(⁵D₀ → ⁷F₆)",
+                min_value=0.0,
+                value=jo_defaults.S5D0_7F6,
+                format="%.10g",
+                key=f"{jo_widget_key}_S5D0_7F6",
+            ),
+        }
+
+        st.caption("Refractive index and lifetime")
+        material_columns = st.columns(2)
+        refractive_index = material_columns[0].number_input(
+            "Refractive index (n)",
+            min_value=0.000000000001,
+            value=jo_defaults.n,
+            format="%.10g",
+            key=f"{jo_widget_key}_n",
+        )
+        lifetime_s = material_columns[1].number_input(
+            "Lifetime (τ, s)",
+            min_value=0.000000000001,
+            value=jo_defaults.tau_s,
+            format="%.10g",
+            key=f"{jo_widget_key}_tau_s",
+        )
+
+        jo_inputs = JuddOfeltInputs(
+            **transition_wavelengths,
+            **transition_areas,
+            n=refractive_index,
+            tau_s=lifetime_s,
+        )
+        jo_results = calculate_judd_ofelt(jo_inputs)
+        st.subheader("Result of calculated Judd-Ofelt (JO) parameters")
+        result_columns = st.columns(4)
+        for column, label, scaled_key, raw_key in (
+            (result_columns[0], "Ω₂ × 10²⁰", "rho2", "Omega2"),
+            (result_columns[1], "Ω₄ × 10²⁰", "rho4", "Omega4"),
+            (result_columns[2], "Ω₆ × 10²⁰", "rho6", "Omega6"),
+        ):
+            column.metric(label, f"{jo_results[scaled_key]:.10g}")
+            column.caption(f"Unscaled Ω = {jo_results[raw_key]:.10g}")
+        result_columns[3].metric(
+            "Intrinsic quantum yield (%)",
+            f"{jo_results['eta_percent']:.10g}%",
+        )
+
+        with st.expander("View all parameters calculated by the JO theory"):
+            result_names = {
+                "sigma01_cm^-1": "σ(⁵D₀→⁷F₁) (cm⁻¹)",
+                "sigma02_cm^-1": "σ(⁵D₀→⁷F₂) (cm⁻¹)",
+                "sigma04_cm^-1": "σ(⁵D₀→⁷F₄) (cm⁻¹)",
+                "sigma06_cm^-1": "σ(⁵D₀→⁷F₆) (cm⁻¹)",
+                "chi": "Refractive-index correction (χ)",
+                "A01": "A(⁵D₀→⁷F₁)",
+                "A02": "A(⁵D₀→⁷F₂)",
+                "A04": "A(⁵D₀→⁷F₄)",
+                "A06": "A(⁵D₀→⁷F₆)",
+                "Omega2": "Unscaled Ω₂",
+                "Omega4": "Unscaled Ω₄",
+                "Omega6": "Unscaled Ω₆",
+                "rho2": "Ω₂ × 10²⁰",
+                "rho4": "Ω₄ × 10²⁰",
+                "rho6": "Ω₆ × 10²⁰",
+                "R02": "S(⁵D₀→⁷F₀) / S(⁵D₀→⁷F₂)",
+                "Arad": "Radiative transition probability (A_rad)",
+                "Atotal": "Total transition probability (A_total)",
+                "Anr": "Non-radiative transition probability (A_nr)",
+                "eta_percent": "Intrinsic quantum yield (%)",
+                "nH2O": "nH₂O",
+            }
+            st.dataframe(
+                pd.DataFrame(
+                    {
+                        "Quantity": [result_names[name] for name in jo_results],
+                        "Value": [value for value in jo_results.values()],
+                    }
+                ),
+                hide_index=True,
+                use_container_width=True,
+            )
 
     downloads = st.columns(5)
     downloads[0].download_button(
