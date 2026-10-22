@@ -252,7 +252,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; the 18045 cm^-1 value is parenthetical in the source."
       },
       {
         "upper_state": "4G5/2",
@@ -262,7 +262,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; the 18045 cm^-1 value is parenthetical in the source."
       },
       {
         "upper_state": "4G5/2",
@@ -272,7 +272,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; the 18045 cm^-1 value is parenthetical in the source."
       },
       {
         "upper_state": "4G5/2",
@@ -282,7 +282,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; the 18045 cm^-1 value is parenthetical in the source."
       },
       {
         "upper_state": "4G7/2",
@@ -292,7 +292,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94."
       },
       {
         "upper_state": "4G7/2",
@@ -302,7 +302,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; continuation values use the leading digits of the first entry in the manifold."
       },
       {
         "upper_state": "4G7/2",
@@ -312,7 +312,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; continuation values use the leading digits of the first entry in the manifold."
       },
       {
         "upper_state": "4G7/2",
@@ -322,7 +322,7 @@
         "energy_column": "observed_cm1",
         "upper_source_page": 94,
         "lower_source_page": 92,
-        "transcription_status": "Provisional OCR transcription; verify against Appendix IV."
+        "transcription_status": "Verified against Carnall Appendix IV, printed pp. 92 and 94; continuation values use the leading digits of the first entry in the manifold."
       }
     ],
     "levels": [
@@ -332,7 +332,7 @@
         "observed_cm1": 0.0,
         "calculated_cm1": -6.0,
         "source_page": 92,
-        "transcription_status": "seed; OCR table heading appears as 6H5/2; calculated value and O-C follow source"
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
       },
       {
         "state": "6H5/2",
@@ -340,7 +340,7 @@
         "observed_cm1": 44.0,
         "calculated_cm1": 53.0,
         "source_page": 92,
-        "transcription_status": "seed"
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
       },
       {
         "state": "6H5/2",
@@ -348,11 +348,187 @@
         "observed_cm1": 159.0,
         "calculated_cm1": 135.0,
         "source_page": 92,
-        "transcription_status": "seed"
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H7/2",
+        "level_index": 1,
+        "observed_cm1": 1000.0,
+        "calculated_cm1": 990.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H7/2",
+        "level_index": 2,
+        "observed_cm1": 1044.0,
+        "calculated_cm1": 1027.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H7/2",
+        "level_index": 3,
+        "observed_cm1": 1185.0,
+        "calculated_cm1": 1205.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H7/2",
+        "level_index": 4,
+        "observed_cm1": 1280.0,
+        "calculated_cm1": 1262.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H9/2",
+        "level_index": 1,
+        "observed_cm1": 2209.0,
+        "calculated_cm1": 2193.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H9/2",
+        "level_index": 2,
+        "observed_cm1": 2244.0,
+        "calculated_cm1": 2233.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 2209."
+      },
+      {
+        "state": "6H9/2",
+        "level_index": 3,
+        "observed_cm1": 2342.0,
+        "calculated_cm1": 2332.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 2209."
+      },
+      {
+        "state": "6H9/2",
+        "level_index": 4,
+        "observed_cm1": 2409.0,
+        "calculated_cm1": 2408.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 2209."
+      },
+      {
+        "state": "6H9/2",
+        "level_index": 5,
+        "observed_cm1": 2473.0,
+        "calculated_cm1": 2468.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 2209."
+      },
+      {
+        "state": "6H11/2",
+        "level_index": 1,
+        "observed_cm1": 3520.0,
+        "calculated_cm1": 3510.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92."
+      },
+      {
+        "state": "6H11/2",
+        "level_index": 2,
+        "observed_cm1": 3568.0,
+        "calculated_cm1": 3553.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 3520."
+      },
+      {
+        "state": "6H11/2",
+        "level_index": 3,
+        "observed_cm1": 3651.0,
+        "calculated_cm1": 3628.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 3520."
+      },
+      {
+        "state": "6H11/2",
+        "level_index": 4,
+        "observed_cm1": 3671.0,
+        "calculated_cm1": 3667.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 3520."
+      },
+      {
+        "state": "6H11/2",
+        "level_index": 5,
+        "observed_cm1": 3727.0,
+        "calculated_cm1": 3739.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 3520."
+      },
+      {
+        "state": "6H11/2",
+        "level_index": 6,
+        "observed_cm1": 3791.0,
+        "calculated_cm1": 3793.0,
+        "source_page": 92,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 92; continuation value's leading digit is carried from 3520."
+      },
+      {
+        "state": "4G5/2",
+        "level_index": 1,
+        "observed_cm1": 17858.0,
+        "calculated_cm1": 17863.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94."
+      },
+      {
+        "state": "4G5/2",
+        "level_index": 2,
+        "observed_cm1": 17949.0,
+        "calculated_cm1": 17960.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94; continuation value's leading digits are carried from 17858."
+      },
+      {
+        "state": "4G5/2",
+        "level_index": 3,
+        "observed_cm1": 18045.0,
+        "calculated_cm1": 18087.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94; observed value is parenthetical in the source."
+      },
+      {
+        "state": "4G7/2",
+        "level_index": 1,
+        "observed_cm1": 20037.0,
+        "calculated_cm1": 20041.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94."
+      },
+      {
+        "state": "4G7/2",
+        "level_index": 2,
+        "observed_cm1": 20093.0,
+        "calculated_cm1": 20094.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94; continuation value's leading digits are carried from 20037."
+      },
+      {
+        "state": "4G7/2",
+        "level_index": 3,
+        "observed_cm1": 20112.0,
+        "calculated_cm1": 20123.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94; continuation value's leading digits are carried from 20037."
+      },
+      {
+        "state": "4G7/2",
+        "level_index": 4,
+        "observed_cm1": 20164.0,
+        "calculated_cm1": 20168.0,
+        "source_page": 94,
+        "transcription_status": "Verified against Carnall Appendix IV, printed p. 94; continuation value's leading digits are carried from 20037."
       }
     ],
     "raw_table_text": "Appendix IV.\n                Experimental and Computed Energy Level Structure of Sm     :LaFo\n\n\n                                                            Rast d\n        SLJ a    Expt.b     Calc.c                         et al.      Diekee\nState            (cm -1 )   (cm - 1 )   O-C                (cm - 1 )   (cm -1 )\n6R\n        5/2\n                        0        -6       6                       0          0\n                      44         53      -9                     48          44\n                    159         135      24                    115         159\n\n\n' H 7/2            1000         990      10                   1000       1003\n                   1044       1027       17                    044        046\n                   1185       1205      -20                    185        100\n                   1280       1262       18                    280        187\n\n6\n    H\n    H              2209       2193       16                  2209        2213\n        9/2\n                    244        233       11                    244        247\n                    342        332       10                    342        344\n                    409        408        1                   409         404\n                    473        468        5                   473         493\n\n\n    H\n        ll/2\n                   3520       3510       10                  3517\n                    568        553       15                   567\n                    651        628       23                   647\n                   671         667        4                   670\n                   727         739      -12                   726\n                        d\n                  791          793       -2                   791\n\nH\n    13/2\n                  4972       4947        25                 4971        4969\n                   982         975        7                   982\n                  5007       5004         3                 5007        5005\n                   046         042        4                   047        044\n                   057         059       -2                   057\n                   122         114       8                    122\n                   160         170      -10                   160\n\f                                               93\nAppendix IV. (cont.\n                                                     Rast c\n     SLJa        Expt . b   Calc.c                  et al.     Diekee\n State           (cm\"1)     (cm\"1)    0-C           (cm -1 )   (cm -1 )\n     H\n         15/2*     6309       6300         9\n     F\n         l/2        341        334      7             6346\n                    406       417    -11               408       6404\n                    460       465     -5               454\n                    -         472                      462\n                    -         553                      492\n                    568       578    -10               538\n                    609       605      4               571\n                    -         666\n\n\n     F\n         3/2      6707       6724    -17              6707\n                    -         738\n\n6f\n     5/2           7177      7177      0              7174       7173\n                    184       190     -6               184        180\n                    223       239    -16               225\n\n6FF               7992       8008    -16\n   7/2                                               7993       7987\n                  8041        026     15             8042       8034\n                   060        059      1              059         054\n                   092        108    -16               092        086\n\n\n6F\n     9/2\n                  9170       9173     -3             9170       9162\n                   178        189    -11               180        173\n                   228        223      5              231        222\n                   252        243      9              254        247\n                   268        281    -13              270        262\n\n\n6F\n     11/2        10561      10567     -6            10559\n                   584        583      1              581\n                   592        590      2              590\n                   603       621     -18              602\n                   613       633     -20\n                   644       656     -12\n\f                                         94\n\n\nAppendix IV. (cont.)\n                                               Rast a\n  SLJa        Expt.\"      Calc.c              et al.     Diekee\n State         (cm -1 )   (cm\"1)   0-C        (cm -1 )   (cm -1 )\n  G\n      5/2       17858      17863    -5                    17858\n                  949        960   -11                      949\n              (18045)      18087                          18046\n\n\n                18924     18933     -9                    18924\n                  942        951    -9                      942\n\n\n  '7/2         20037      20041     -4                    20037\n                  093       094     -1                      093\n                  112       123    -11                      111\n                  164       168     -4\n\n  L\n      9/2      20416      20406     10                    20417\n                  472       472     0                       471\n                  499       505    -6                       497\n                  522       531    -9                       523\n                  570       551    19\n\n\n  l\n      15/2'               20685\n                            770\n                            808\n                            858\n                            892\n                            904\n                            922                          20944\n                            974\n                          21004\n                            071\n                            164\n                            179\n                            248\n                            265\n\f    Appendix IV. (cont.)                                   95\n\n\n    SLJC             Obsd.b    Calc.c             Diekee            SLJ a      Obsd.b     Calc.c             Diekee\nState                (cm\"1)   (cm l)    0-C       (cm 1)    State             (cm 1)    (cm 1)   0-C        (cm L )\n\n\n    1                21520    21541      -21      21520             4*17/2*\n                                                                                  -      23116\n        13/2                                                         G                     ICO\n                       602      602           0                        9/2»                158\n\n                       636      616       20        637              *15/2\n\n                       665      649       16        647\n                       _                                        M19/2,         23988     23989         -1\n                                652\n                                                            6P                 24022    24035      -13\n                                                             P\n                       674      666           8                5/2\n                                                                                 031       068     -37\n                       706      684       22        709\n                                                                                 064       080     -16\nr                                                                                084       101     -17       24084\n                     22164    22178      -14 22164\n    3/2                                                                          119       126         -7      119\n                       207      213       -6        207\n                                                                                 135       134          1\n                       240      254      -14        241\n                                                                                 153       162         -9      153\n                                                                                           169\nM\n    17/2'            22501    22500           1 22501\n                                                                                           181\n    G\n        9/2'           531      539       -8        532\n                                                                                           186\n             ,\n        1 1 C / f\\     542      552     -10\n         ID/ I                                                                   _        207\n                       _        573\n                                                                                 —        218\n                       579      581       -2\n                       628      63/      -2\n                                                                L\n                                                                    13/2       24608    24616          -8    24607\n                       695      693           2\n                                TXSk\n                                                                                 629      632          —3      628\n                                /JO\n                                                                                 631      642      -11         631\n                       —        770\n                                                                                 644      658      -14         643\n                       808      801       7\n                                                                                 679      689      -10         678\n                       829      834      -5\n                                RA7\n                                                                                 683      695      -12         683\n                                00 /\n                                                                                 710      720      -10         709\n                       -        912\n                       942      943      —1                 /\n                                                                F\n                                                                    7/2        24911    24900          11   24911\n                                982\n                                                                                 993      987          6       993\n                       _      23020\n                                                                               25007    25002          5 25007\n                       —       023\n                                                                                 064      071          -7      064\n                       —       036\n                       _       054                          S/2                  081      088          -7\n                                                                                 _        106\n                       —       083\n\f                                                       96\n Appendix IV. (cont.)\n\n SLJd         Obsd.       Calc.c            Diekee              SLJa         Obsd.b     Calc.c           Diekee\nState     (cm        )   (cm -1 ) O-C       (cm -1 )        State           (cm -1 )   (cm\"1) 0-C        (cm\"1)\n\n\n '11/2'       25166      25169      -3                          L\n                                                                    17/2»    26702     26694        8   26699\n *M21/2;           182     177          5                       S/2            712       705        7     709\n 4MM                                    1\n    15/2 ,         204     203                                                 717       718      -1      712\n          2        216     217      -1                                         743       751      -8      758\n               -           220                                                 776       763      13      776\n               -           243                                                 792       777      15      791\n               248         259     -11                                         797       800      -3      796\n               282         285      -3                                         -         803\n               -           308                                                 812       812       0      810\n               -           343                                                 822       826      -4      822\n               -           398                                                 859       849      10      857\n               -           439                                                 -         862\n               -           476                                                 874       868        6\n               -           543\n                                                            4\n               -           565                                  K\n                                                                K           26942      26931      11\n                                                                  13/2\n               611         603       8      25614                              962       955        7\n               636         621      15        632                           27003        991      12\n               650         645       5        649                              018     27014        4\n               672         654      18        666                              031       026        5\n               684         682       2        681                              061       073     -12\n               -           698                                                 120       109      11\n               711         708       3\n               718         713       5                  4FF                 27417      27381      36    27419\n                                                           9/2\n               771         762       9        767                              432       443     -11      434\n               789         782       7        787                              448       467     -19      448\n               801         795       6        798                              508       510      -2\n               826         823       3                                         -         552\n               832         845     -13\n               866         866       0                  4                   27648      27646      2     27649\n                                                            D\n                                                                3/2\n               904         882      22                                         658      654       4       659\n               -          921\n\n\n          26495          26472     23       26495\n'1/2\n\f    Appendix IV. (cont.)                          97\n\n\n           Obsd.b    Calc.c           Dieke*               SLJC       Obsd.,      Calc.               Dieke\n                        l                    -1\nState      (cm *)   (cm )     0-C     (cm )            State         (cm - 1 )   (cm X )   0-C        (cm *)\n\n\nS/2        27691    27714      -23   27692             ( 4 K, 4 L) 17/2 29166 29169          -3\n             734      763     -29      735                                -         183\n             758      787     -29      759                               195        191          4\n                                                                          -        219\n           28247    28242       5 28247                                   -        238\n             261      252       9      262             4T                                    -2\n                                                           L\n                                                            19/2> 29268          29270\n             344      359     -15                          4HP       304           298           6\n                                                              ll/2»\n             409      393      16      410                   4H       -            315\n                                                               \"13/2\n                                                                          -        325\n'K15/2     28722    28735     -13                                         -        335\n             732      743     -11    28732                                -        347\n             760      757       3                                         -        356\n             -        770                                                 -        363\n             784      783       1                                         -        397\n             797      793       4                                         -        416\n             -        804                                                 -        457\n             817      823      -6                                         -        478\n                                                                          -        505\nH\n    9/2    28938    28925      13 28938                                   -        514\n             -        929                                                 -        555\n             981      989      -8      980                                -        558\n           29035    29045     -10      036                                -        562\n             055     070      -15     052                                -         607\n                                                                                   615\nD\n    7/2    29086    29098     -12    29083                               -         650\n             094      103     -14     092                               709        681      28\n             112      115      -3      111                              723        693      30\n            -         122                                               738        738       0\n          7/2\"       137\n             -       140                               G             30027       30031      -4       30028\n                                                           7/2>\n          29154      154        0 29154                    G\n                                                               9/2      120        118       2         120\n             -        156                                               136        159     -23        136\n\fAppendix IV. (cont.)                                   98\n\n\n SLJa       Obsd.b     Calc.c              Diekee            SLJa       Obsd.b     Calc.c                Diekee\nState      (cm -1 )   (cm -1 )   0-C       (cm - 1 )        State      (cm -1 )   (cm - 1 )   0-C        (cm\"1)\n\n\n                      30193                                             32800     32797             3 32799\nG\n 7/2'\n4r\n                                                            S/2\n G\n   9/2      30216       210            6    213                           823       824         -1        823\n              235       212        23                                     857       856             1     858\n              -         260\n              293       289        4                        2FF           -\n                                                               5/2»               33548\n              332       347      -15                          K\n                                                                  13/2» 33615       642       -27\n                                                             S/2          -         708\nG             -       30438                                               777       787       -10\n    5/2\n              -         508                                               -         813\n                        549                                               _         865\n                                                                                    900\n\n    1/2               31226                                                         955\n                                                                                    962\n\n    15/2     —        31337                                                         977\n             -         352                                                        34007\n           31410       394        16 31412                                          028\n             433       445       -12       435                                      049\n             463       476       -13       465                                      081\n             488       495        -7       489                                      095\n             511       504         7       511\n             523       513        10       524              '17/2'                34341\n             532       530         2       533              ^9/2                    358\n             543       558       -15       538                                     386\n             583       604       -21       582                                     426\n             624       623         1       627                                     434\n             -         630                                             34454       467        -13\n             -         682                                               468       468          0\n             -         707                                               481       488         -7       34484\n             759       734        25                                     497       495          2         499\n                                                                         519       536        -17\n                                                                                   552\n                                                                                   590\n\f    Appendix IV.        (cont.)             99\n\n\n     SLJC      Obsd.        Calc*                 SLJe          Obsd. b     Calc.c\n    State      (cm        (cm A )   0-C          State         (cm -1 )    (cm     ) 0-C\n\n2\n    L 17/21               34612                                         (38906-41774)f\n                            654                                           46 levels\n\n\n     7/2'                                        G                -       42039\n                                                     9/2\n                       (35612-35823)1\n     19/2                                                      42066         072       -6\n                                                                  124        104       20\n     1/2                                                          135        137       -2\n                          35846\n                                                                  176        183       -7\n    L\n        ll/2   35890      35892        -2\n                 905        905         0        °23/2»        42227      42215        12\n                 -          932                  4Gr\n                                                    5/2»          378       400       -22\n                 954        945         9            G\n                                                         7/2\n                                                                  -         456\n                 996        987         9                         462       472       -10\n               36007        999         8                         486       480        6\n                 055      36054         1                         -         506\n                                                                  -         514\n                       (36315-37273)f                             -         546\n                         (39 levels)                             -          574\n                                                                 -          594\n+\nH 9/2          37623     37607       16                          -          612\n                 -          618                                   616       614        2\n                 634        638      -4                          -          642\n                 657        654         3                        -          643\n                 679        667      12                          658        661       -3\n                                                                 -          668\n                 _       38175                                   -          699\n    •7/2'\n\n    \"P3/2\n                 -          219                                  711        720       -9\n                 -         300                                   -          744\n               38467       461         6                         -          809\n                492        485         7         4K              -\n                                                  ^15/2                     914\n                           512                                   -          951\n                                                                 959        963       -4\n\f Appendix IV. (cont.)                   100\n\n\n\n SLJ°      Obsd . b     Calc.c           SLJa               Obsd.b      Calc.c\nState      (cm\"1)      (cm -1 )   O-C   State              (cm -1 )    (cm - 1 )   0-C\n\n\n J\n    21/2               42976                                        (44491-47029)1\n           42990         996       -6                                 54 levels\n                       43022\n           43040         041       -1     l\n                                             ll/2          47336       47306        30\n                         056                                  374        363        11\n             074         080       -6                                    430\n                                                                         523\n                                   f\n                   (43088-43658)                                         536\n                      27 levels                                          675\n\n\nl\n ll/2      43769      43760                                       (47812-48909)f\n                        762                                           45 levels\n                        808\n             844        855       -11    r\n                                          l/2»               (49581-49865)f\n                        869                  H\n                                                 9/2'\n                        921                      F\n                                                     5/2\n\n\n'7/2       43991      43975        16\n                      44005\n                        033\n                        041\n\f                                      101\nAppendix IV. (cont.)\n\n\na\n  Largest or two largest eigenvector components are indicated.\n  Experimental results for the H5/2 state taken from Ref. 1 based on corre-\n  lation with model calculation.     Observed data for the \"9/12 a n d   \"9/2\n  states in the ground multiplet from Ref. 57. Values in oarentheses were\n  not included in the parameter fitting process. All entries in cm     vac.\nc\n  Energy level parameters are given in Table 4.\nd\n  Ref. 57.\ne\n  Ref. 1.\n  In certain regions of the spectrum where no structure was observed and\n  computations indicated a high density of levels, only the initial and\n  final energies of the group are indicated. In some cases one or two very\n  weak bands were observed consistent with calculation, but not included.",
-    "transcription_notes": "Only selected seed rows are structured; remaining table values are preserved in raw_table_text and require table-by-table validation."
+    "transcription_notes": "The 6H5/2, 6H7/2, 6H9/2, 6H11/2, 4G5/2, and 4G7/2 observed and calculated energies are structured and cross-checked against printed pages 92 and 94. Continuation values in the source omit repeated leading digits. The 18045 cm^-1 4G5/2 observed value is parenthetical in the source. Other appendix levels remain in raw_table_text and are not fully structured."
   },
   "Eu3+": {
     "name": "Europium(III)",
