@@ -126,17 +126,24 @@ The application provides downloads for:
 - Uploaded spectrum with converted energy coordinates (CSV).
 - Publication-ready annotated spectrum (300 dpi PNG).
 
-### Standalone absolute XEOL light yield
+### Absolute XEOL light yield
 
-The separate [xeol_light_yield](./xeol_light_yield/README.md) tool estimates
-photons per keV deposited from QEPro spectra. It requires an absolute
-wavelength-dependent radiometric response for the complete optical chain, a
-collection-efficiency correction, and measured X-ray/deposition inputs. Raw
-counts or wavelength calibration alone are not sufficient for an absolute
-yield. The QEPro certificate was described as wavelength calibration only;
-absolute yield still requires a separate radiometric calibration. The
-certificate file has not yet been attached. See the standalone guide for its
-required response-table format and scientific assumptions.
+For a single uploaded spectrum, expand **Absolute XEOL light yield** on the
+analysis page. The panel accepts the full-chain absolute response,
+optional matching background, QEPro signal basis and integration duration,
+actual beam-on time, incident flux, X-ray energy, deposited fraction,
+collection-efficiency correction, sample metadata, and calibration IDs. It
+calculates photons per keV deposited and offers a JSON report download. Optional
+relative standard uncertainties can be entered for the five independent
+response, collection, flux, X-ray-energy, and deposition inputs.
+
+The app does not infer an absolute response from raw counts or wavelength
+calibration. The QEPro certificate was described as wavelength calibration
+only; a separate absolute wavelength-dependent radiometric response for the
+complete optical chain is still required. The
+[xeol_light_yield guide](./xeol_light_yield/README.md) documents the required
+response-table format and scientific assumptions and also describes the
+standalone command-line analyzer.
 
 ## Try the hosted application
 

@@ -134,6 +134,34 @@ class XeolLightYieldTests(unittest.TestCase):
                 ]
             )
             self.assertEqual(saved_report["acquisition"]["signal_basis"], "counts_per_second")
+            report = generate_xeol_report(
+                spectrum_path,
+                response_path,
+                output_path,
+                {
+                    "composition": "test",
+                    "thickness_mm": 0.5,
+                    "collection_geometry": "test",
+                    "radiometric_calibration_identifier": "response-test",
+                },
+                {"estimated_deposited_energy_keV": 1},
+                {"light_yield_photons_per_keV": 2},
+                {
+                    "absolute spectral response": 3.0,
+                    "collection efficiency": 4.0,
+                    "incident flux": 0.0,
+                    "X-ray energy": 0.0,
+                    "deposited fraction": 0.0,
+                },
+                wavelength_range_nm=(350.0, 600.0),
+            )
+            self.assertEqual(report["measured_wavelength_range_nm"], [350.0, 600.0])
+            self.assertAlmostEqual(
+                report["uncertainty"][
+                    "light_yield_standard_uncertainty_photons_per_keV"
+                ],
+                0.1,
+            )
 
     def test_cli_writes_absolute_yield_report(self):
         with tempfile.TemporaryDirectory() as temp_dir:

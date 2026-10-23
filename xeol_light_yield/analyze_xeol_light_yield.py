@@ -311,9 +311,12 @@ def generate_xeol_report(
     background_path: str | Path | None = None,
     collection_efficiency_description: str | None = None,
     acquisition_metadata: dict[str, str | float] | None = None,
+    wavelength_range_nm: tuple[float, float] | None = None,
 ) -> dict[str, object]:
     """Create and write a machine-readable report of the analysis inputs and result."""
-    wavelengths = [wavelength for wavelength, _ in read_spectrum(spectrum_path)]
+    if wavelength_range_nm is None:
+        wavelengths = [wavelength for wavelength, _ in read_spectrum(spectrum_path)]
+        wavelength_range_nm = (min(wavelengths), max(wavelengths))
     yield_value = light_yield_results["light_yield_photons_per_keV"]
     report: dict[str, object] = {
         "method": (
@@ -322,7 +325,7 @@ def generate_xeol_report(
         ),
         "spectrum_file": Path(spectrum_path).name,
         "background_file": Path(background_path).name if background_path else None,
-        "measured_wavelength_range_nm": [min(wavelengths), max(wavelengths)],
+        "measured_wavelength_range_nm": list(wavelength_range_nm),
         "sample": sample_metadata,
         "calibration": {
             "radiometric_calibration_identifier": sample_metadata[

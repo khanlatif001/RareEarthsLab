@@ -24,6 +24,16 @@ from Judd_Ofelt.omega_parameters import (
     Inputs as JuddOfeltInputs,
     calculate as calculate_judd_ofelt,
 )
+from xeol_light_yield.analyze_xeol_light_yield import (
+    calculate_absolute_light_yield,
+    calculate_deposited_xray_energy,
+    correct_spectral_response,
+    generate_xeol_report,
+    read_collection_efficiency,
+    read_spectral_response,
+    read_spectrum as read_xeol_spectrum,
+    subtract_background,
+)
 
 
 BACKGROUND_COLORMAP_OPTIONS = {
@@ -625,6 +635,441 @@ def plot_spectrum_comparison(
     plt.close(fig)
 
 
+def render_absolute_xeol_yield(
+    uploaded_file,
+    spectrum_df,
+    spectrum_axis,
+    spectrum_identity,
+):
+    """Render and calculate XEOL yield when a full absolute calibration is supplied."""
+    with st.expander("Absolute XEOL light yield (photons/keV deposited)"):
+        st.warning(
+            "The QEPro wavelength certificate calibrates wavelength only. "
+            "Absolute yield also requires a separate complete-chain radiometric "
+            "response (W/nm per count/s), a defensible collection efficiency, "
+            "and a deposited-energy estimate. Do not use the wavelength "
+            "certificate as the radiometric response."
+        )
+        st.write(
+            "This uses the spectral-response approach adapted from de Haas, "
+            "Dorenbos, and van Eijk (2005); it does not apply their PMT-specific "
+            "quantum-efficiency or reflectivity corrections."
+        )
+        response_upload = st.file_uploader(
+            "Absolute spectral response CSV",
+            type=["csv", "txt"],
+            key=f"xeol_response_{spectrum_identity}",
+            help=(
+                "Required columns: wavelength_nm and "
+                "watts_per_nm_per_count_rate. Values must calibrate the full "
+                "optical chain, not just wavelength or relative response."
+            ),
+        )
+        background_upload = st.file_uploader(
+            "Optional matching background spectrum",
+            type=["txt", "csv", "dat"],
+            key=f"xeol_background_{spectrum_identity}",
+            help="Use the same acquisition settings; the background must cover the measured wavelength range.",
+        )
+
+        signal_basis = st.selectbox(
+            "QEPro signal units",
+            ["Counts per integration", "Counts per second"],
+            key=f"xeol_signal_basis_{spectrum_identity}",
+            help="Choose the units in the uploaded spectrum; scan averaging is not multiplied into exposure time automatically.",
+        )
+        integration_time_s = None
+        if signal_basis == "Counts per integration":
+            integration_time_s = st.number_input(
+                "QEPro integration time (s)",
+                min_value=0.0,
+                value=0.0,
+                key=f"xeol_integration_{spectrum_identity}",
+                help="Enter the integration duration corresponding to the uploaded counts.",
+            )
+        exposure_time_s = st.number_input(
+            "Actual X-ray beam-on duration for this spectrum (s)",
+            min_value=0.0,
+            value=0.0,
+            key=f"xeol_exposure_{spectrum_identity}",
+            help="Enter actual exposure duration; do not infer it by multiplying integration time by scans.",
+        )
+
+        column_left, column_right = st.columns(2)
+        incident_flux = column_left.number_input(
+            "Incident X-ray flux (photons/s)",
+            min_value=0.0,
+            value=0.0,
+            format="%.6g",
+            key=f"xeol_flux_{spectrum_identity}",
+        )
+        xray_energy_kev = column_right.number_input(
+            "X-ray photon energy (keV)",
+            min_value=0.0,
+            value=0.0,
+            format="%.6g",
+            key=f"xeol_xray_energy_{spectrum_identity}",
+        )
+        deposited_fraction = st.number_input(
+            "Estimated fraction of incident X-ray energy deposited in sample",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.0,
+            format="%.6f",
+            key=f"xeol_deposited_fraction_{spectrum_identity}",
+            help="Supply a justified energy-deposition fraction; this is not inferred from primary-beam attenuation.",
+        )
+
+        collection_mode = st.selectbox(
+            "Collection-efficiency correction",
+            ["Single wavelength-independent fraction", "Wavelength-dependent CSV"],
+            key=f"xeol_collection_mode_{spectrum_identity}",
+        )
+        collection_efficiency: float | list[tuple[float, float]] = 0.0
+        collection_upload = None
+        if collection_mode == "Single wavelength-independent fraction":
+            collection_efficiency = st.number_input(
+                "Fraction of emitted photons represented at calibrated detector (0 < η ≤ 1)",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.0,
+                format="%.6f",
+                key=f"xeol_collection_scalar_{spectrum_identity}",
+                help="This is separate from the response calibration; avoid correcting the same optical losses twice.",
+            )
+        else:
+            collection_upload = st.file_uploader(
+                "Collection efficiency CSV",
+                type=["csv", "txt"],
+                key=f"xeol_collection_curve_{spectrum_identity}",
+                help="Required columns: wavelength_nm and collection_efficiency (fractions from 0 to 1).",
+            )
+
+        st.markdown("**Sample and calibration metadata**")
+        metadata_left, metadata_right = st.columns(2)
+        sample_composition = metadata_left.text_input(
+            "Sample composition",
+            key=f"xeol_composition_{spectrum_identity}",
+        )
+        sample_thickness_mm = metadata_right.number_input(
+            "Sample thickness (mm)",
+            min_value=0.0,
+            value=0.0,
+            key=f"xeol_thickness_{spectrum_identity}",
+        )
+        collection_geometry = st.text_input(
+            "Collection geometry (describe sample, fiber, optics, and path)",
+            key=f"xeol_geometry_{spectrum_identity}",
+        )
+        radiometric_calibration_id = st.text_input(
+            "Absolute radiometric calibration identifier",
+            key=f"xeol_radiometric_id_{spectrum_identity}",
+            help="Identifier for the separate absolute response calibration, not the QEPro wavelength certificate.",
+        )
+        wavelength_calibration_id = st.text_input(
+            "QEPro wavelength-certificate identifier (optional)",
+            key=f"xeol_wavelength_id_{spectrum_identity}",
+        )
+        include_uncertainties = st.checkbox(
+            "Enter relative standard uncertainties (%)",
+            value=False,
+            key=f"xeol_include_uncertainties_{spectrum_identity}",
+            help="If enabled, enter all five values for independent uncertainties in response, collection efficiency, flux, X-ray energy, and deposited fraction.",
+        )
+        uncertainty_inputs: dict[str, str] = {}
+        if include_uncertainties:
+            st.caption(
+                "Enter one-standard-deviation relative uncertainties as percentages."
+            )
+            uncertainty_columns = st.columns(5)
+            uncertainty_labels = {
+                "absolute spectral response": "Response (%)",
+                "collection efficiency": "Collection (%)",
+                "incident flux": "Flux (%)",
+                "X-ray energy": "X-ray energy (%)",
+                "deposited fraction": "Deposited fraction (%)",
+            }
+            for column, (name, label) in zip(
+                uncertainty_columns, uncertainty_labels.items()
+            ):
+                uncertainty_inputs[name] = column.text_input(
+                    label,
+                    key=f"xeol_uncertainty_{name}_{spectrum_identity}",
+                    help="Required when uncertainty calculation is selected.",
+                )
+
+        calculate_clicked = st.button(
+            "Calculate absolute light yield",
+            key=f"xeol_calculate_{spectrum_identity}",
+            type="primary",
+        )
+        calculation_inputs = {
+            "signal_basis": signal_basis,
+            "integration_time_s": integration_time_s,
+            "exposure_time_s": exposure_time_s,
+            "incident_flux": incident_flux,
+            "xray_energy_kev": xray_energy_kev,
+            "deposited_fraction": deposited_fraction,
+            "collection_efficiency": collection_efficiency,
+            "collection_mode": collection_mode,
+            "sample_composition": sample_composition,
+            "sample_thickness_mm": sample_thickness_mm,
+            "collection_geometry": collection_geometry,
+            "radiometric_calibration_id": radiometric_calibration_id,
+            "wavelength_calibration_id": wavelength_calibration_id,
+            "uncertainty_inputs": uncertainty_inputs,
+        }
+        request_hash = hashlib.sha256(
+            json.dumps(calculation_inputs, sort_keys=True).encode("utf-8")
+        )
+        for uploaded_item in (
+            uploaded_file,
+            response_upload,
+            background_upload,
+            collection_upload,
+        ):
+            if uploaded_item is not None:
+                request_hash.update(uploaded_item.getvalue())
+        request_fingerprint = request_hash.hexdigest()
+        result_state_key = f"xeol_result_{spectrum_identity}"
+        cached_result = st.session_state.get(result_state_key)
+
+        required_text = {
+            "sample composition": sample_composition,
+            "collection geometry": collection_geometry,
+            "absolute radiometric calibration identifier": radiometric_calibration_id,
+        }
+        missing_text = [name for name, value in required_text.items() if not value.strip()]
+        if calculate_clicked and missing_text:
+            st.error("Enter the following required metadata: " + ", ".join(missing_text) + ".")
+            return
+        if calculate_clicked and not response_upload:
+            st.error(
+                "Upload an absolute spectral-response table. A wavelength-only "
+                "QEPro certificate is not sufficient."
+            )
+            return
+        positive_inputs = {
+            "actual beam-on duration": exposure_time_s,
+            "incident X-ray flux": incident_flux,
+            "X-ray photon energy": xray_energy_kev,
+            "deposited fraction": deposited_fraction,
+            "sample thickness": sample_thickness_mm,
+        }
+        if integration_time_s is not None:
+            positive_inputs["integration time"] = integration_time_s
+        if calculate_clicked and (
+            any(value <= 0 for value in positive_inputs.values())
+            or deposited_fraction > 1
+        ):
+            st.error("All acquisition and sample inputs must be greater than zero.")
+            return
+        if calculate_clicked and collection_mode == "Wavelength-dependent CSV" and not collection_upload:
+            st.error("Upload the wavelength-dependent collection-efficiency CSV.")
+            return
+        uncertainties_percent: dict[str, float | None] = {
+            "absolute spectral response": None,
+            "collection efficiency": None,
+            "incident flux": None,
+            "X-ray energy": None,
+            "deposited fraction": None,
+        }
+        if calculate_clicked and include_uncertainties:
+            try:
+                uncertainties_percent = {
+                    name: float(value.strip())
+                    for name, value in uncertainty_inputs.items()
+                }
+                if any(
+                    not np.isfinite(value) or value < 0
+                    for value in uncertainties_percent.values()
+                    if value is not None
+                ):
+                    raise ValueError
+            except ValueError:
+                st.error(
+                    "Enter a finite, non-negative percentage for each of the "
+                    "five uncertainty inputs."
+                )
+                return
+        if not calculate_clicked and (
+            not cached_result
+            or cached_result["request_fingerprint"] != request_fingerprint
+        ):
+            st.caption(
+                "No current absolute result. Supply valid calibration and "
+                "measurement inputs, then calculate the yield."
+            )
+            return
+
+        if calculate_clicked:
+            try:
+                with tempfile.TemporaryDirectory() as temporary_directory:
+                    temporary_path = Path(temporary_directory)
+                    spectrum_path = temporary_path / Path(uploaded_file.name).name
+                    response_path = temporary_path / Path(response_upload.name).name
+                    spectrum_path.write_bytes(uploaded_file.getvalue())
+                    response_path.write_bytes(response_upload.getvalue())
+                    spectrum = [
+                        (float(wavelength), float(signal))
+                        for wavelength, signal in zip(
+                            spectrum_df["wavelength_nm"],
+                            spectrum_df["intensity"],
+                        )
+                    ]
+                    background_path = None
+                    if background_upload:
+                        background_path = temporary_path / Path(background_upload.name).name
+                        background_path.write_bytes(background_upload.getvalue())
+                        background = read_xeol_spectrum(background_path, spectrum_axis)
+                        background_values = [
+                            (float(row.wavelength_nm), float(row.intensity))
+                            for row in background.itertuples()
+                        ]
+                        spectrum = subtract_background(spectrum, background_values)
+
+                    response_curve = read_spectral_response(response_path)
+                    spectral_power = correct_spectral_response(
+                        spectrum,
+                        response_curve,
+                        integration_time_s,
+                        (
+                            "counts_per_integration"
+                            if signal_basis == "Counts per integration"
+                            else "counts_per_second"
+                        ),
+                    )
+                    collection_description = ""
+                    if collection_upload:
+                        collection_path = temporary_path / Path(collection_upload.name).name
+                        collection_path.write_bytes(collection_upload.getvalue())
+                        collection_efficiency = read_collection_efficiency(collection_path)
+                        collection_description = (
+                            f"Wavelength-dependent calibration: {collection_upload.name}"
+                        )
+                    else:
+                        if collection_efficiency <= 0 or collection_efficiency > 1:
+                            raise ValueError(
+                                "Collection efficiency must be greater than 0 and at most 1."
+                            )
+                        collection_description = (
+                            f"Scalar fraction: {collection_efficiency:g}"
+                        )
+
+                    deposited_energy_kev = calculate_deposited_xray_energy(
+                        incident_flux,
+                        exposure_time_s,
+                        xray_energy_kev,
+                        deposited_fraction,
+                    )
+                    results = calculate_absolute_light_yield(
+                        spectral_power,
+                        exposure_time_s,
+                        collection_efficiency,
+                        deposited_energy_kev,
+                    )
+                    report_path = temporary_path / "xeol_light_yield_report.json"
+                    report = generate_xeol_report(
+                        spectrum_path,
+                        response_path,
+                        report_path,
+                        {
+                            "composition": sample_composition.strip(),
+                            "thickness_mm": sample_thickness_mm,
+                            "collection_geometry": collection_geometry.strip(),
+                            "radiometric_calibration_identifier": radiometric_calibration_id.strip(),
+                            "wavelength_calibration_identifier": (
+                                wavelength_calibration_id.strip() or "not provided"
+                            ),
+                        },
+                        {
+                            "incident_flux_photons_s": incident_flux,
+                            "photon_energy_keV": xray_energy_kev,
+                            "actual_exposure_time_s": exposure_time_s,
+                            "deposited_fraction_user_supplied": deposited_fraction,
+                            "estimated_deposited_energy_keV": deposited_energy_kev,
+                        },
+                        results,
+                        uncertainties_percent,
+                        background_path,
+                        collection_description,
+                        {
+                            "signal_basis": signal_basis,
+                            "integration_time_s": (
+                                integration_time_s
+                                if integration_time_s is not None
+                                else "not applicable"
+                            ),
+                        },
+                        wavelength_range_nm=(
+                            min(wavelength for wavelength, _ in spectrum),
+                            max(wavelength for wavelength, _ in spectrum),
+                        ),
+                    )
+                    st.session_state[result_state_key] = {
+                        "request_fingerprint": request_fingerprint,
+                        "results": results,
+                        "deposited_energy_kev": deposited_energy_kev,
+                        "wavelength_range": [
+                            min(wavelength for wavelength, _ in spectrum),
+                            max(wavelength for wavelength, _ in spectrum),
+                        ],
+                        "report_bytes": report_path.read_bytes(),
+                        "uncertainty": report["uncertainty"],
+                    }
+                    cached_result = st.session_state[result_state_key]
+            except (OSError, ValueError, pd.errors.ParserError) as exc:
+                st.error(f"Could not calculate absolute XEOL light yield: {exc}")
+                return
+
+        results = cached_result["results"]
+        deposited_energy_kev = cached_result["deposited_energy_kev"]
+        st.success("Absolute light-yield estimate calculated.")
+        st.metric(
+            "Absolute XEOL light yield",
+            f"{results['light_yield_photons_per_keV']:.6g} photons/keV deposited",
+        )
+        result_columns = st.columns(3)
+        result_columns[0].metric(
+            "Estimated emitted photons",
+            f"{results['emitted_photons']:.6g}",
+        )
+        result_columns[1].metric(
+            "Estimated deposited X-ray energy",
+            f"{deposited_energy_kev:.6g} keV",
+        )
+        result_columns[2].metric(
+            "Measured wavelength range",
+            (
+                f"{cached_result['wavelength_range'][0]:g}-"
+                f"{cached_result['wavelength_range'][1]:g} nm"
+            ),
+        )
+        uncertainty = cached_result["uncertainty"]
+        uncertainty_value = uncertainty[
+            "light_yield_standard_uncertainty_photons_per_keV"
+        ]
+        if uncertainty_value is None:
+            st.info(
+                "Combined uncertainty not calculated. Missing relative standard "
+                "uncertainties: "
+                + ", ".join(uncertainty["uncertainties_not_provided"])
+                + "."
+            )
+        else:
+            st.metric(
+                "Combined standard uncertainty",
+                f"±{uncertainty_value:.6g} photons/keV",
+            )
+        st.download_button(
+            "Download XEOL light-yield report (JSON)",
+            cached_result["report_bytes"],
+            file_name="xeol_light_yield_report.json",
+            mime="application/json",
+            key=f"xeol_report_download_{spectrum_identity}",
+        )
+
+
 def main():
     st.set_page_config(page_title="LuminescenceLab: Rare Earth Spectral Analysis", layout="wide")
     st.title("LuminescenceLab: Rare Earth Spectral Analysis")
@@ -1117,6 +1562,13 @@ def main():
     except (OSError, ValueError, pd.errors.ParserError) as exc:
         st.error(f"Could not analyze the uploaded spectrum: {exc}")
         st.stop()
+
+    render_absolute_xeol_yield(
+        uploaded_file,
+        df,
+        axis_options[axis_label],
+        spectrum_identity,
+    )
 
     matched_peak_count = (
         int(matches.loc[matches["status"].eq("CANDIDATE_MATCH"), "peak_id"].nunique())
