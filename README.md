@@ -126,6 +126,18 @@ The application provides downloads for:
 - Uploaded spectrum with converted energy coordinates (CSV).
 - Publication-ready annotated spectrum (300 dpi PNG).
 
+### Standalone absolute XEOL light yield
+
+The separate [xeol_light_yield](./xeol_light_yield/README.md) tool estimates
+photons per keV deposited from QEPro spectra. It requires an absolute
+wavelength-dependent radiometric response for the complete optical chain, a
+collection-efficiency correction, and measured X-ray/deposition inputs. Raw
+counts or wavelength calibration alone are not sufficient for an absolute
+yield. The QEPro certificate was described as wavelength calibration only;
+absolute yield still requires a separate radiometric calibration. The
+certificate file has not yet been attached. See the standalone guide for its
+required response-table format and scientific assumptions.
+
 ## Try the hosted application
 
 Open [LuminescenceLab on Streamlit](https://rareearthslab-jxhqdrpyr3mtukkjbdaugf.streamlit.app/)
