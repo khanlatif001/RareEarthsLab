@@ -1074,7 +1074,7 @@ def render_apparent_xeol_yield(
                 "The reference is approximate or relative; this result is not an "
                 "absolute light yield."
             )
-            yield_label = "Reference-scaled apparent yield (not absolute)"
+            yield_label = "Reference-scaled apparent light yield (not absolute)"
         st.metric(
             yield_label,
             f"{results['apparent_light_yield_photons_per_mev']:.6g}",
