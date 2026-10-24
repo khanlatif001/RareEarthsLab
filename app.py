@@ -24,6 +24,12 @@ from Judd_Ofelt.omega_parameters import (
     Inputs as JuddOfeltInputs,
     calculate as calculate_judd_ofelt,
 )
+from xeol_light_yield.apparent_light_yield import (
+    calculate_absorption_corrected_light_yield,
+    calculate_apparent_light_yield,
+    calculate_monoenergetic_absorption_fraction,
+    calculate_scintillator_equivalent_thickness,
+)
 from xeol_light_yield.analyze_xeol_light_yield import (
     calculate_absolute_light_yield,
     calculate_deposited_xray_energy,
@@ -633,6 +639,480 @@ def plot_spectrum_comparison(
         bbox_inches="tight",
     )
     plt.close(fig)
+
+
+def render_apparent_xeol_yield(
+    uploaded_file,
+    spectrum_df,
+    spectrum_axis,
+    spectrum_identity,
+):
+    """Render reference-based apparent and X-ray attenuation-corrected yield."""
+    with st.expander("Apparent XEOL light yield (reference method)"):
+        st.markdown(
+            r"""
+            \[
+            LY_a(s)=LY_{\mathrm{ref}}
+            \frac{\int I_s(\lambda)D(\lambda)\,d\lambda}
+                 {\int I_{\mathrm{ref}}(\lambda)D(\lambda)\,d\lambda}
+            \]
+            Upload the sample spectrum currently open in the app and a reference
+            measured with comparable X-ray fluence, collection geometry, and
+            detector settings. The output is on the reference's photons/MeV scale;
+            it is an absolute-scale value only when the entered reference yield
+            is traceable.
+            """
+        )
+        reference_upload = st.file_uploader(
+            "Reference phosphor spectrum",
+            type=["txt", "csv", "dat"],
+            key=f"apparent_reference_{spectrum_identity}",
+            help="Use the same spectral axis and comparable measurement conditions as the sample.",
+        )
+        sample_background_upload = st.file_uploader(
+            "Optional sample background spectrum",
+            type=["txt", "csv", "dat"],
+            key=f"apparent_sample_background_{spectrum_identity}",
+            help="Measure with matching settings; the background must cover the sample wavelength range.",
+        )
+        reference_background_upload = st.file_uploader(
+            "Optional reference background spectrum",
+            type=["txt", "csv", "dat"],
+            key=f"apparent_reference_background_{spectrum_identity}",
+            help="Measure with matching settings; the background must cover the reference wavelength range.",
+        )
+        reference_light_yield = st.number_input(
+            "Reference light yield (photons/MeV)",
+            min_value=0.0,
+            value=0.0,
+            format="%.6g",
+            key=f"apparent_reference_yield_{spectrum_identity}",
+        )
+        reference_status = st.selectbox(
+            "Reference-value status",
+            ["Certified/traceable absolute value", "Approximate or relative value"],
+            key=f"apparent_reference_status_{spectrum_identity}",
+        )
+        reference_source = st.text_input(
+            "Reference yield source (certificate or citation)",
+            key=f"apparent_reference_source_{spectrum_identity}",
+        )
+
+        detector_mode = st.radio(
+            "Detector-response handling",
+            [
+                "Upload D(λ) correction multiplier",
+                "Both spectra already corrected (D = 1)",
+                "No correction available (uncorrected ratio)",
+            ],
+            key=f"apparent_detector_mode_{spectrum_identity}",
+            help=(
+                "Upload a wavelength_nm, correction_multiplier table only if "
+                "the spectra have not already been corrected with that function."
+            ),
+        )
+        detector_upload = None
+        if detector_mode == "Upload D(λ) correction multiplier":
+            detector_upload = st.file_uploader(
+                "Detector correction curve D(λ) CSV",
+                type=["txt", "csv", "dat"],
+                key=f"apparent_detector_curve_{spectrum_identity}",
+                help="Two columns: wavelength in nm and a positive multiplicative correction factor.",
+            )
+        elif detector_mode == "No correction available (uncorrected ratio)":
+            st.warning(
+                "This ratio is not corrected for wavelength-dependent detector "
+                "response and may be biased when the spectra have different shapes."
+            )
+
+        apply_absorption_correction = st.checkbox(
+            "Also calculate X-ray-attenuation-corrected yield",
+            key=f"apparent_apply_absorption_{spectrum_identity}",
+        )
+        absorption_method = None
+        absorption_inputs: dict[str, float] = {}
+        if apply_absorption_correction:
+            st.markdown(
+                r"""
+                \[
+                LY_{\mathrm{XAE-corr}}(s)=LY_a(s)
+                \frac{F_{\mathrm{abs,ref}}}{F_{\mathrm{abs},s}}
+                \]
+                """
+            )
+            absorption_method = st.radio(
+                "X-ray attenuation input",
+                [
+                    "Enter sample/reference attenuation fractions",
+                    "Estimate from monochromatic μ and path length",
+                ],
+                key=f"apparent_absorption_method_{spectrum_identity}",
+                help=(
+                    "For a polychromatic beam, enter energy-weighted attenuation "
+                    "fractions calculated from its spectrum and material coefficients."
+                ),
+            )
+            sample_column, reference_column = st.columns(2)
+            if absorption_method == "Enter sample/reference attenuation fractions":
+                absorption_inputs["sample_fraction"] = sample_column.number_input(
+                    "Sample X-ray attenuation fraction",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.0,
+                    format="%.6f",
+                    key=f"apparent_sample_fraction_{spectrum_identity}",
+                    help="Fraction of incident primary X-rays attenuated in the sample.",
+                )
+                absorption_inputs["reference_fraction"] = reference_column.number_input(
+                    "Reference X-ray attenuation fraction",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.0,
+                    format="%.6f",
+                    key=f"apparent_reference_fraction_{spectrum_identity}",
+                    help="Fraction of incident primary X-rays attenuated in the reference.",
+                )
+            else:
+                absorption_inputs["sample_mu"] = sample_column.number_input(
+                    "Sample linear attenuation coefficient (cm⁻¹)",
+                    min_value=0.0,
+                    value=0.0,
+                    key=f"apparent_sample_mu_{spectrum_identity}",
+                )
+                absorption_inputs["sample_path_mm"] = sample_column.number_input(
+                    "Sample X-ray path length (mm)",
+                    min_value=0.0,
+                    value=0.0,
+                    key=f"apparent_sample_path_{spectrum_identity}",
+                )
+                absorption_inputs["reference_mu"] = reference_column.number_input(
+                    "Reference linear attenuation coefficient (cm⁻¹)",
+                    min_value=0.0,
+                    value=0.0,
+                    key=f"apparent_reference_mu_{spectrum_identity}",
+                )
+                absorption_inputs["reference_path_mm"] = reference_column.number_input(
+                    "Reference X-ray path length (mm)",
+                    min_value=0.0,
+                    value=0.0,
+                    key=f"apparent_reference_path_{spectrum_identity}",
+                )
+                st.caption(
+                    "This monochromatic, normal-incidence Beer–Lambert estimate "
+                    "is primary-beam attenuation, not deposited-energy fraction."
+                )
+
+        calculate_set = st.checkbox(
+            "Calculate the SI scintillator-equivalent thickness (SET) for a composite layer",
+            key=f"apparent_calculate_set_{spectrum_identity}",
+        )
+        set_inputs: dict[str, float] = {}
+        if calculate_set:
+            set_columns = st.columns(4)
+            set_inputs["total_thickness_mm"] = set_columns[0].number_input(
+                "Total layer thickness h (mm)",
+                min_value=0.0,
+                value=0.0,
+                key=f"apparent_set_h_{spectrum_identity}",
+            )
+            set_inputs["mass_fraction"] = set_columns[1].number_input(
+                "Scintillator mass fraction wₛ",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.0,
+                key=f"apparent_set_ws_{spectrum_identity}",
+            )
+            set_inputs["scintillator_density_g_cm3"] = set_columns[2].number_input(
+                "Scintillator density ρₛ (g/cm³)",
+                min_value=0.0,
+                value=0.0,
+                key=f"apparent_set_rhos_{spectrum_identity}",
+            )
+            set_inputs["matrix_density_g_cm3"] = set_columns[3].number_input(
+                "Matrix density ρₚ (g/cm³)",
+                min_value=0.0,
+                value=0.0,
+                key=f"apparent_set_rhop_{spectrum_identity}",
+            )
+            st.caption(
+                "The SET equation follows the Supporting Information and returns "
+                "d in the same length unit as h."
+            )
+
+        calculate_clicked = st.button(
+            "Calculate apparent light yield",
+            key=f"apparent_calculate_{spectrum_identity}",
+            type="primary",
+        )
+        calculation_inputs = {
+            "reference_light_yield_photons_per_mev": reference_light_yield,
+            "reference_status": reference_status,
+            "reference_source": reference_source,
+            "detector_mode": detector_mode,
+            "apply_absorption_correction": apply_absorption_correction,
+            "absorption_method": absorption_method,
+            "absorption_inputs": absorption_inputs,
+            "calculate_set": calculate_set,
+            "set_inputs": set_inputs,
+            "spectrum_axis": spectrum_axis,
+        }
+        request_hash = hashlib.sha256(
+            json.dumps(calculation_inputs, sort_keys=True).encode("utf-8")
+        )
+        for uploaded_item in (
+            uploaded_file,
+            reference_upload,
+            sample_background_upload,
+            reference_background_upload,
+            detector_upload,
+        ):
+            if uploaded_item is not None:
+                request_hash.update(uploaded_item.getvalue())
+        request_fingerprint = request_hash.hexdigest()
+        result_state_key = f"apparent_xeol_result_{spectrum_identity}"
+        cached_result = st.session_state.get(result_state_key)
+
+        if calculate_clicked and not reference_upload:
+            st.error("Upload a reference phosphor spectrum.")
+            return
+        if calculate_clicked and reference_light_yield <= 0:
+            st.error("Enter a positive reference light yield.")
+            return
+        if (
+            calculate_clicked
+            and reference_status == "Certified/traceable absolute value"
+            and not reference_source.strip()
+        ):
+            st.error("Provide the certificate or citation for the reference yield.")
+            return
+        if calculate_clicked and detector_mode == "Upload D(λ) correction multiplier" and not detector_upload:
+            st.error("Upload the detector correction curve or select another correction mode.")
+            return
+        if calculate_clicked and apply_absorption_correction:
+            if absorption_method == "Enter sample/reference attenuation fractions":
+                if any(
+                    value <= 0 or value > 1
+                    for value in absorption_inputs.values()
+                ):
+                    st.error("Both attenuation fractions must be greater than 0 and at most 1.")
+                    return
+            elif any(value <= 0 for value in absorption_inputs.values()):
+                st.error("Both attenuation coefficients and path lengths must be positive.")
+                return
+        if calculate_clicked and calculate_set and (
+            set_inputs["total_thickness_mm"] <= 0
+            or set_inputs["scintillator_density_g_cm3"] <= 0
+            or set_inputs["matrix_density_g_cm3"] <= 0
+        ):
+            st.error("Enter positive layer thickness and component densities.")
+            return
+        if not calculate_clicked and (
+            not cached_result
+            or cached_result["request_fingerprint"] != request_fingerprint
+        ):
+            st.caption(
+                "Upload a reference and enter the required values, then calculate "
+                "the apparent yield."
+            )
+            return
+
+        if calculate_clicked:
+            try:
+                with tempfile.TemporaryDirectory() as temporary_directory:
+                    temporary_path = Path(temporary_directory)
+                    reference_path = temporary_path / Path(reference_upload.name).name
+                    reference_path.write_bytes(reference_upload.getvalue())
+                    reference_df = read_spectrum(reference_path, spectrum_axis)
+                    sample_spectrum = [
+                        (float(row.wavelength_nm), float(row.intensity))
+                        for row in spectrum_df.itertuples()
+                    ]
+                    reference_spectrum = [
+                        (float(row.wavelength_nm), float(row.intensity))
+                        for row in reference_df.itertuples()
+                    ]
+                    background_paths: dict[str, str] = {}
+                    for label, background_upload, spectrum in (
+                        ("sample", sample_background_upload, sample_spectrum),
+                        ("reference", reference_background_upload, reference_spectrum),
+                    ):
+                        if background_upload:
+                            background_path = temporary_path / (
+                                f"{label}_{Path(background_upload.name).name}"
+                            )
+                            background_path.write_bytes(background_upload.getvalue())
+                            background_df = read_spectrum(
+                                background_path, spectrum_axis
+                            )
+                            background_spectrum = [
+                                (float(row.wavelength_nm), float(row.intensity))
+                                for row in background_df.itertuples()
+                            ]
+                            corrected_spectrum = subtract_background(
+                                spectrum, background_spectrum
+                            )
+                            if label == "sample":
+                                sample_spectrum = corrected_spectrum
+                            else:
+                                reference_spectrum = corrected_spectrum
+                            background_paths[label] = Path(
+                                background_upload.name
+                            ).name
+
+                    detector_correction = None
+                    if detector_upload:
+                        detector_path = temporary_path / Path(detector_upload.name).name
+                        detector_path.write_bytes(detector_upload.getvalue())
+                        detector_df = read_spectrum(detector_path, "wavelength_nm")
+                        detector_correction = [
+                            (float(row.wavelength_nm), float(row.intensity))
+                            for row in detector_df.itertuples()
+                        ]
+
+                    results = calculate_apparent_light_yield(
+                        sample_spectrum,
+                        reference_spectrum,
+                        reference_light_yield,
+                        detector_correction,
+                    )
+                    if apply_absorption_correction:
+                        if absorption_method == "Enter sample/reference attenuation fractions":
+                            sample_fraction = absorption_inputs["sample_fraction"]
+                            reference_fraction = absorption_inputs["reference_fraction"]
+                        else:
+                            sample_fraction = calculate_monoenergetic_absorption_fraction(
+                                absorption_inputs["sample_mu"],
+                                absorption_inputs["sample_path_mm"],
+                            )
+                            reference_fraction = calculate_monoenergetic_absorption_fraction(
+                                absorption_inputs["reference_mu"],
+                                absorption_inputs["reference_path_mm"],
+                            )
+                        results["sample_xray_attenuation_fraction"] = sample_fraction
+                        results["reference_xray_attenuation_fraction"] = reference_fraction
+                        results["xray_attenuation_corrected_light_yield_photons_per_mev"] = (
+                            calculate_absorption_corrected_light_yield(
+                                results["apparent_light_yield_photons_per_mev"],
+                                sample_fraction,
+                                reference_fraction,
+                            )
+                        )
+                    if calculate_set:
+                        results["scintillator_equivalent_thickness_mm"] = (
+                            calculate_scintillator_equivalent_thickness(
+                                set_inputs["total_thickness_mm"],
+                                set_inputs["mass_fraction"],
+                                set_inputs["scintillator_density_g_cm3"],
+                                set_inputs["matrix_density_g_cm3"],
+                            )
+                        )
+
+                    report = {
+                        "method": (
+                            "Reference-based apparent light yield from the ratio of "
+                            "detector-weighted integrated emission spectra."
+                        ),
+                        "sample_spectrum_file": Path(uploaded_file.name).name,
+                        "reference": {
+                            "spectrum_file": Path(reference_upload.name).name,
+                            "light_yield_photons_per_MeV": reference_light_yield,
+                            "value_status": reference_status,
+                            "source": reference_source.strip(),
+                        },
+                        "background_files": background_paths,
+                        "detector_response": {
+                            "handling": detector_mode,
+                            "correction_file": (
+                                Path(detector_upload.name).name if detector_upload else None
+                            ),
+                        },
+                        "absorption_correction": {
+                            "method": absorption_method,
+                            "inputs": absorption_inputs,
+                        },
+                        "scintillator_equivalent_thickness_inputs": set_inputs,
+                        "results": results,
+                        "assumptions_and_limits": [
+                            "Sample and reference must have comparable X-ray fluence, collection geometry, and acquisition settings.",
+                            "When acquisition settings differ, normalize sample and reference signals to equivalent X-ray exposure before analysis.",
+                            "The detector correction is a multiplicative function applied to both spectra; do not apply it a second time to pre-corrected data.",
+                            "Spectra are linearly interpolated and integrated only over their shared wavelength range; calibration extrapolation is not allowed.",
+                            "X-ray attenuation correction normalizes both sample and reference attenuation fractions and does not correct optical transport or independently determine deposited energy.",
+                            "The monochromatic attenuation estimate assumes a homogeneous layer and a normal-incidence primary beam; use energy-weighted attenuation fractions for a polychromatic beam.",
+                            "The scintillator-equivalent thickness uses the mass-fraction/density equation in the Supporting Information.",
+                            "The yield inherits absolute units only when the reference light yield is traceable.",
+                        ],
+                    }
+                    report_bytes = (
+                        json.dumps(report, indent=2, ensure_ascii=False) + "\n"
+                    ).encode("utf-8")
+                    st.session_state[result_state_key] = {
+                        "request_fingerprint": request_fingerprint,
+                        "results": results,
+                        "report_bytes": report_bytes,
+                    }
+                    cached_result = st.session_state[result_state_key]
+            except (OSError, ValueError, pd.errors.ParserError) as exc:
+                st.error(f"Could not calculate apparent XEOL light yield: {exc}")
+                return
+
+        results = cached_result["results"]
+        if (
+            reference_status == "Certified/traceable absolute value"
+            and detector_mode != "No correction available (uncorrected ratio)"
+        ):
+            st.success("Apparent light yield calculated on the supplied reference scale.")
+            yield_label = "Apparent light yield (photons/MeV)"
+        elif reference_status == "Certified/traceable absolute value":
+            st.warning(
+                "The reference is traceable, but no detector-response correction "
+                "was applied; this apparent yield may be wavelength-response biased."
+            )
+            yield_label = "Uncorrected apparent yield (reference scale)"
+        else:
+            st.warning(
+                "The reference is approximate or relative; this result is not an "
+                "absolute light yield."
+            )
+            yield_label = "Reference-scaled apparent yield (not absolute)"
+        st.metric(
+            yield_label,
+            f"{results['apparent_light_yield_photons_per_mev']:.6g}",
+        )
+        signal_columns = st.columns(3)
+        signal_columns[0].metric(
+            "Integrated sample signal",
+            f"{results['sample_integrated_signal']:.6g}",
+        )
+        signal_columns[1].metric(
+            "Integrated reference signal",
+            f"{results['reference_integrated_signal']:.6g}",
+        )
+        signal_columns[2].metric(
+            "Shared wavelength range",
+            f"{results['wavelength_min_nm']:g}-{results['wavelength_max_nm']:g} nm",
+        )
+        corrected_yield = results.get(
+            "xray_attenuation_corrected_light_yield_photons_per_mev"
+        )
+        if corrected_yield is not None:
+            st.metric(
+                "X-ray-attenuation-corrected yield (photons/MeV)",
+                f"{corrected_yield:.6g}",
+            )
+        set_thickness = results.get("scintillator_equivalent_thickness_mm")
+        if set_thickness is not None:
+            st.metric(
+                "Scintillator-equivalent thickness d",
+                f"{set_thickness:.6g} mm",
+            )
+        st.download_button(
+            "Download apparent light-yield report (JSON)",
+            cached_result["report_bytes"],
+            file_name="apparent_xeol_light_yield_report.json",
+            mime="application/json",
+            key=f"apparent_report_download_{spectrum_identity}",
+        )
 
 
 def render_absolute_xeol_yield(
@@ -1563,11 +2043,11 @@ def main():
         st.error(f"Could not analyze the uploaded spectrum: {exc}")
         st.stop()
 
+    render_apparent_xeol_yield(
+        uploaded_file, df, axis_options[axis_label], spectrum_identity
+    )
     render_absolute_xeol_yield(
-        uploaded_file,
-        df,
-        axis_options[axis_label],
-        spectrum_identity,
+        uploaded_file, df, axis_options[axis_label], spectrum_identity
     )
 
     matched_peak_count = (

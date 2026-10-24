@@ -126,6 +126,31 @@ The application provides downloads for:
 - Uploaded spectrum with converted energy coordinates (CSV).
 - Publication-ready annotated spectrum (300 dpi PNG).
 
+### Apparent XEOL light yield
+
+For a single uploaded sample spectrum, expand **Apparent XEOL light yield
+(reference method)** and upload a reference spectrum measured under comparable
+X-ray fluence, collection geometry, and detector settings. The app calculates
+
+`LY_a(sample) = LY_ref × integral(I_sample × D) / integral(I_ref × D)`
+
+over the wavelength range shared by both spectra. Supply a multiplicative
+detector-correction curve `D(λ)` when needed; choose `D = 1` only when both
+spectra have already received the same correction. The raw-ratio option is
+explicitly marked uncorrected. Apparent yield inherits absolute photons/MeV
+units only when the reference value is traceable. Optional sample and reference
+background spectra are subtracted with interpolation; each must cover its
+corresponding emission spectrum.
+
+An optional X-ray attenuation correction normalizes both sample and reference
+attenuation fractions. The app accepts supplied fractions (including
+energy-weighted values for a polychromatic beam), or estimates them from
+linear attenuation coefficients and path lengths for a monochromatic,
+normal-incidence beam. This corrects primary-beam attenuation, not deposited
+energy or optical transport. The optional composite-layer SET calculation
+uses the mass-fraction and component-density equation in the paper's Supporting
+Information. A JSON report records inputs, results, and assumptions.
+
 ### Absolute XEOL light yield
 
 For a single uploaded spectrum, expand **Absolute XEOL light yield** on the
