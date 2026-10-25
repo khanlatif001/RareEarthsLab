@@ -12,6 +12,7 @@ identification. Review all assignments against the scanned source tables.
 from __future__ import annotations
 import argparse, json
 import hashlib
+import importlib
 import re
 from pathlib import Path
 import tempfile
@@ -20,10 +21,6 @@ import pandas as pd
 from scipy.signal import find_peaks, peak_widths, savgol_filter
 import matplotlib.pyplot as plt
 import streamlit as st
-from cie_color import (
-    calculate_cie_coordinates,
-    create_cie_chromaticity_image,
-)
 from Judd_Ofelt.omega_parameters import (
     Inputs as JuddOfeltInputs,
     calculate as calculate_judd_ofelt,
@@ -70,6 +67,18 @@ BACKGROUND_COLORMAP_OPTIONS = {
     "Specialized — Twilight": "twilight",
     "Specialized — Twilight Shifted": "twilight_shifted",
 }
+
+
+def _cie_color_function(name):
+    try:
+        cie_color = importlib.import_module("cie_color")
+        return getattr(cie_color, name)
+    except (ImportError, AttributeError) as exc:
+        raise RuntimeError(
+            "The CIE feature could not load its cie_color package. "
+            "Confirm the cie_color folder is committed and present in the "
+            "deployed app, then redeploy."
+        ) from exc
 
 
 def read_spectrum(path, axis="auto"):
@@ -1682,7 +1691,9 @@ def main():
                 valid_cie_rows = []
                 for label, spectrum in spectra:
                     try:
-                        coordinates = calculate_cie_coordinates(
+                        coordinates = _cie_color_function(
+                            "calculate_cie_coordinates"
+                        )(
                             spectrum["wavelength_nm"].to_numpy(float),
                             spectrum["intensity"].to_numpy(float),
                         )
@@ -1811,7 +1822,9 @@ def main():
             )
             if valid_cie_rows:
                 try:
-                    chromaticity_image = create_cie_chromaticity_image(
+                    chromaticity_image = _cie_color_function(
+                        "create_cie_chromaticity_image"
+                    )(
                         valid_cie_rows
                     )
                 except (RuntimeError, ValueError) as exc:
@@ -1994,7 +2007,9 @@ def main():
             spectrum_path.write_bytes(uploaded_data)
             df = read_spectrum(spectrum_path, axis_options[axis_label])
             try:
-                cie_coordinates = calculate_cie_coordinates(
+                cie_coordinates = _cie_color_function(
+                    "calculate_cie_coordinates"
+                )(
                     df["wavelength_nm"].to_numpy(float),
                     df["intensity"].to_numpy(float),
                 )
@@ -2151,7 +2166,9 @@ def main():
                 key=f"cie_coordinates_download_{spectrum_identity}",
             )
             try:
-                chromaticity_image = create_cie_chromaticity_image(
+                chromaticity_image = _cie_color_function(
+                    "create_cie_chromaticity_image"
+                )(
                     [
                         {
                             "No": 1,
