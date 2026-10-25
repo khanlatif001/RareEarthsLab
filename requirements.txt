@@ -5,3 +5,4 @@ pandas
 scipy
 matplotlib
 plotly
+colour-science>=0.4.4,<0.5

@@ -20,6 +20,7 @@ import pandas as pd
 from scipy.signal import find_peaks, peak_widths, savgol_filter
 import matplotlib.pyplot as plt
 import streamlit as st
+from cie_color import calculate_cie_coordinates
 from Judd_Ofelt.omega_parameters import (
     Inputs as JuddOfeltInputs,
     calculate as calculate_judd_ofelt,
@@ -1674,6 +1675,21 @@ def main():
                     (scan_labels[index], spectrum)
                     for index, (_, spectrum) in enumerate(spectra)
                 ]
+                cie_rows = []
+                for label, spectrum in spectra:
+                    try:
+                        coordinates = calculate_cie_coordinates(
+                            spectrum["wavelength_nm"].to_numpy(float),
+                            spectrum["intensity"].to_numpy(float),
+                        )
+                    except ValueError as exc:
+                        cie_rows.append(
+                            {"Spectrum": label, "Status": f"Unavailable: {exc}"}
+                        )
+                    else:
+                        cie_rows.append(
+                            {"Spectrum": label, "Status": "Calculated", **coordinates}
+                        )
                 x_limit_columns = st.sidebar.columns(2)
                 x_min = x_limit_columns[0].number_input(
                     "E_min",
@@ -1764,6 +1780,22 @@ def main():
             file_name="spectrum_comparison.png",
             mime="image/png",
         )
+        with st.expander("CIE 1931 2° chromaticity coordinates", expanded=True):
+            st.caption(
+                "Each scan is integrated independently against the CIE 1931 2° "
+                "standard-observer color-matching functions. Accurate color "
+                "coordinates require wavelength-dependent correction for the "
+                "detector and optical response."
+            )
+            cie_table = pd.DataFrame(cie_rows)
+            st.dataframe(cie_table, hide_index=True, use_container_width=True)
+            st.download_button(
+                "Download CIE coordinates (CSV)",
+                data=cie_table.to_csv(index=False).encode("utf-8"),
+                file_name="cie_1931_coordinates.csv",
+                mime="text/csv",
+                key=f"cie_coordinates_comparison_download_{controls_key}",
+            )
         st.stop()
     uploaded_file = uploaded_files[0] if uploaded_files else None
 
@@ -1925,12 +1957,21 @@ def main():
     try:
         uploaded_data = uploaded_file.getvalue()
         spectrum_identity = hashlib.sha256(uploaded_data).hexdigest()[:12]
+        cie_coordinates = None
+        cie_error = None
         with tempfile.TemporaryDirectory() as temporary_directory:
             spectrum_path = Path(temporary_directory) / (
                 f"uploaded_spectrum{Path(uploaded_file.name).suffix}"
             )
             spectrum_path.write_bytes(uploaded_data)
             df = read_spectrum(spectrum_path, axis_options[axis_label])
+            try:
+                cie_coordinates = calculate_cie_coordinates(
+                    df["wavelength_nm"].to_numpy(float),
+                    df["intensity"].to_numpy(float),
+                )
+            except ValueError as exc:
+                cie_error = str(exc)
             x_axis_limits = None
             if df.attrs.get("axis") == "wavelength_nm":
                 wavelength_columns = st.sidebar.columns(2)
@@ -2042,6 +2083,39 @@ def main():
     except (OSError, ValueError, pd.errors.ParserError) as exc:
         st.error(f"Could not analyze the uploaded spectrum: {exc}")
         st.stop()
+
+    with st.expander("CIE 1931 2° chromaticity coordinates", expanded=True):
+        st.caption(
+            "Calculated by integrating the measured emission spectrum against "
+            "the CIE 1931 2° standard-observer color-matching functions. "
+            "Accurate color coordinates require wavelength-dependent correction "
+            "for the detector and optical response."
+        )
+        if cie_coordinates is None:
+            st.warning(f"Could not calculate CIE coordinates: {cie_error}")
+        else:
+            coordinate_columns = st.columns(3)
+            coordinate_columns[0].metric("CIE x", f"{cie_coordinates['cie_x']:.6f}")
+            coordinate_columns[1].metric("CIE y", f"{cie_coordinates['cie_y']:.6f}")
+            coordinate_columns[2].metric("CIE z", f"{cie_coordinates['cie_z']:.6f}")
+            st.caption(
+                "Relative tristimulus values (XYZ): "
+                f"{cie_coordinates['tristimulus_X']:.6g}, "
+                f"{cie_coordinates['tristimulus_Y']:.6g}, "
+                f"{cie_coordinates['tristimulus_Z']:.6g}; "
+                f"integration range: "
+                f"{cie_coordinates['wavelength_min_nm']:.3f}–"
+                f"{cie_coordinates['wavelength_max_nm']:.3f} nm."
+            )
+            st.download_button(
+                "Download CIE coordinates (CSV)",
+                data=pd.DataFrame(
+                    [{"Spectrum": Path(uploaded_file.name).name, **cie_coordinates}]
+                ).to_csv(index=False).encode("utf-8"),
+                file_name="cie_1931_coordinates.csv",
+                mime="text/csv",
+                key=f"cie_coordinates_download_{spectrum_identity}",
+            )
 
     render_apparent_xeol_yield(
         uploaded_file, df, axis_options[axis_label], spectrum_identity
