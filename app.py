@@ -20,7 +20,10 @@ import pandas as pd
 from scipy.signal import find_peaks, peak_widths, savgol_filter
 import matplotlib.pyplot as plt
 import streamlit as st
-from cie_color import calculate_cie_coordinates
+from cie_color import (
+    calculate_cie_coordinates,
+    create_cie_chromaticity_image,
+)
 from Judd_Ofelt.omega_parameters import (
     Inputs as JuddOfeltInputs,
     calculate as calculate_judd_ofelt,
@@ -1676,6 +1679,7 @@ def main():
                     for index, (_, spectrum) in enumerate(spectra)
                 ]
                 cie_rows = []
+                valid_cie_rows = []
                 for label, spectrum in spectra:
                     try:
                         coordinates = calculate_cie_coordinates(
@@ -1684,12 +1688,21 @@ def main():
                         )
                     except ValueError as exc:
                         cie_rows.append(
-                            {"Spectrum": label, "Status": f"Unavailable: {exc}"}
+                            {
+                                "No": "",
+                                "Spectrum": label,
+                                "Status": f"Unavailable: {exc}",
+                            }
                         )
                     else:
-                        cie_rows.append(
-                            {"Spectrum": label, "Status": "Calculated", **coordinates}
-                        )
+                        cie_row = {
+                            "No": len(valid_cie_rows) + 1,
+                            "Spectrum": label,
+                            "Status": "Calculated",
+                            **coordinates,
+                        }
+                        cie_rows.append(cie_row)
+                        valid_cie_rows.append(cie_row)
                 x_limit_columns = st.sidebar.columns(2)
                 x_min = x_limit_columns[0].number_input(
                     "E_min",
@@ -1796,6 +1809,21 @@ def main():
                 mime="text/csv",
                 key=f"cie_coordinates_comparison_download_{controls_key}",
             )
+            if valid_cie_rows:
+                try:
+                    chromaticity_image = create_cie_chromaticity_image(
+                        valid_cie_rows
+                    )
+                except ValueError as exc:
+                    st.error(f"Could not create the CIE diagram: {exc}")
+                else:
+                    st.download_button(
+                        "Download numbered CIE diagram (PNG)",
+                        data=chromaticity_image,
+                        file_name="cie_1931_chromaticity_diagram.png",
+                        mime="image/png",
+                        key=f"cie_diagram_comparison_download_{controls_key}",
+                    )
         st.stop()
     uploaded_file = uploaded_files[0] if uploaded_files else None
 
@@ -2110,12 +2138,38 @@ def main():
             st.download_button(
                 "Download CIE coordinates (CSV)",
                 data=pd.DataFrame(
-                    [{"Spectrum": Path(uploaded_file.name).name, **cie_coordinates}]
+                    [
+                        {
+                            "No": 1,
+                            "Spectrum": Path(uploaded_file.name).name,
+                            **cie_coordinates,
+                        }
+                    ]
                 ).to_csv(index=False).encode("utf-8"),
                 file_name="cie_1931_coordinates.csv",
                 mime="text/csv",
                 key=f"cie_coordinates_download_{spectrum_identity}",
             )
+            try:
+                chromaticity_image = create_cie_chromaticity_image(
+                    [
+                        {
+                            "No": 1,
+                            "Spectrum": Path(uploaded_file.name).name,
+                            **cie_coordinates,
+                        }
+                    ]
+                )
+            except ValueError as exc:
+                st.error(f"Could not create the CIE diagram: {exc}")
+            else:
+                st.download_button(
+                    "Download numbered CIE diagram (PNG)",
+                    data=chromaticity_image,
+                    file_name="cie_1931_chromaticity_diagram.png",
+                    mime="image/png",
+                    key=f"cie_diagram_download_{spectrum_identity}",
+                )
 
     render_apparent_xeol_yield(
         uploaded_file, df, axis_options[axis_label], spectrum_identity

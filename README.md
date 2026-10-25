@@ -31,10 +31,12 @@ browser-based interface.
 - Convert input positions to wavelength and photon wavenumber for comparison.
 - Calculate CIE 1931 2° chromaticity coordinates (x, y, z) and relative XYZ
   tristimulus values from single spectra and each scan in a comparison, with
-  CSV downloads. The calculation uses the standard observer's tabulated
-  color-matching functions and the measured intensity as the emission spectrum.
-  Meaningful color coordinates require wavelength-dependent correction for the
-  detector and optical response; negative intensities are rejected.
+  CSV downloads. Download a numbered chromaticity diagram without displaying it
+  in the workspace; marker numbers match the valid coordinate rows in the CSV.
+  The calculation uses the standard observer's tabulated color-matching
+  functions and measured intensity as the emission spectrum. Meaningful color
+  coordinates require wavelength-dependent correction for detector and optical
+  response; negative intensities are rejected.
 - Upload multiple files to compare scans from the same sample. Choose an
   overlay or vertically stacked plot; each scan keeps its own measured
   intensities, with no averaging, combining, normalization, or interpolation.

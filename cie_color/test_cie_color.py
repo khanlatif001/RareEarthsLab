@@ -2,7 +2,10 @@ import unittest
 
 import numpy as np
 
-from cie_color import calculate_cie_coordinates
+from cie_color import (
+    calculate_cie_coordinates,
+    create_cie_chromaticity_image,
+)
 
 
 class CieColorTests(unittest.TestCase):
@@ -35,6 +38,16 @@ class CieColorTests(unittest.TestCase):
     def test_rejects_spectrum_outside_observer_range(self):
         with self.assertRaisesRegex(ValueError, "does not overlap"):
             calculate_cie_coordinates([900.0, 910.0], [1.0, 1.0])
+
+    def test_chromaticity_image_is_png_and_accepts_multiple_numbered_points(self):
+        image = create_cie_chromaticity_image(
+            [
+                {"No": 1, "cie_x": 0.31, "cie_y": 0.33},
+                {"No": 2, "cie_x": 0.22, "cie_y": 0.25},
+            ]
+        )
+
+        self.assertTrue(image.startswith(b"\x89PNG\r\n\x1a\n"))
 
 
 if __name__ == "__main__":
