@@ -1831,7 +1831,7 @@ def main():
                     st.error(f"Could not create the CIE diagram: {exc}")
                 else:
                     st.download_button(
-                        "Download numbered CIE diagram (PNG)",
+                        "Download CIE diagram (PNG)",
                         data=chromaticity_image,
                         file_name="cie_1931_chromaticity_diagram.png",
                         mime="image/png",
@@ -2181,7 +2181,7 @@ def main():
                 st.error(f"Could not create the CIE diagram: {exc}")
             else:
                 st.download_button(
-                    "Download numbered CIE diagram (PNG)",
+                    "Download CIE diagram (PNG)",
                     data=chromaticity_image,
                     file_name="cie_1931_chromaticity_diagram.png",
                     mime="image/png",
