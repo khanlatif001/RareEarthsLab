@@ -1686,7 +1686,7 @@ def main():
                             spectrum["wavelength_nm"].to_numpy(float),
                             spectrum["intensity"].to_numpy(float),
                         )
-                    except ValueError as exc:
+                    except (RuntimeError, ValueError) as exc:
                         cie_rows.append(
                             {
                                 "No": "",
@@ -1814,7 +1814,7 @@ def main():
                     chromaticity_image = create_cie_chromaticity_image(
                         valid_cie_rows
                     )
-                except ValueError as exc:
+                except (RuntimeError, ValueError) as exc:
                     st.error(f"Could not create the CIE diagram: {exc}")
                 else:
                     st.download_button(
@@ -1998,7 +1998,7 @@ def main():
                     df["wavelength_nm"].to_numpy(float),
                     df["intensity"].to_numpy(float),
                 )
-            except ValueError as exc:
+            except (RuntimeError, ValueError) as exc:
                 cie_error = str(exc)
             x_axis_limits = None
             if df.attrs.get("axis") == "wavelength_nm":
@@ -2160,7 +2160,7 @@ def main():
                         }
                     ]
                 )
-            except ValueError as exc:
+            except (RuntimeError, ValueError) as exc:
                 st.error(f"Could not create the CIE diagram: {exc}")
             else:
                 st.download_button(

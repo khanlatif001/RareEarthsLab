@@ -5,11 +5,26 @@ from io import BytesIO
 from typing import Mapping, Sequence
 
 import numpy as np
-import colour
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.path import Path as MatplotlibPath
 from matplotlib.ticker import MultipleLocator
+
+
+def _get_colour_module():
+    try:
+        import colour
+    except ImportError as exc:
+        raise RuntimeError(
+            "CIE calculations require the colour-science package. "
+            "Install the project's requirements and redeploy."
+        ) from exc
+    return colour
+
+
+def _get_cie_observer():
+    colour = _get_colour_module()
+    return colour.MSDS_CMFS["CIE 1931 2 Degree Standard Observer"]
 
 
 def calculate_cie_coordinates(
@@ -43,7 +58,7 @@ def calculate_cie_coordinates(
     if np.any(np.diff(wavelengths) <= 0):
         raise ValueError("Wavelengths must be unique.")
 
-    observer = colour.MSDS_CMFS["CIE 1931 2 Degree Standard Observer"]
+    observer = _get_cie_observer()
     observer_wavelengths = np.asarray(observer.domain, dtype=float)
     matching_functions = np.asarray(observer.values, dtype=float)
     integration_min = max(float(wavelengths[0]), float(observer_wavelengths[0]))
@@ -116,7 +131,7 @@ def create_cie_chromaticity_image(
     if not samples:
         raise ValueError("At least one valid CIE coordinate is required to plot.")
 
-    observer = colour.MSDS_CMFS["CIE 1931 2 Degree Standard Observer"]
+    observer = _get_cie_observer()
     observer_wavelengths = np.asarray(observer.domain, dtype=float)
     matching_functions = np.asarray(observer.values, dtype=float)
     visible = (observer_wavelengths >= 380.0) & (observer_wavelengths <= 780.0)
@@ -139,6 +154,7 @@ def create_cie_chromaticity_image(
             np.maximum(1.0 - xy_points[:, 0] - xy_points[:, 1], 0.0) / safe_y,
         )
     )
+    colour = _get_colour_module()
     rgb = np.clip(colour.XYZ_to_sRGB(xyz), 0.0, 1.0)
     rgba = np.column_stack((rgb, inside.astype(float))).reshape(
         len(y_values), len(x_values), 4

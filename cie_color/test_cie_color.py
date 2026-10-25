@@ -1,4 +1,6 @@
 import unittest
+from unittest.mock import patch
+import sys
 
 import numpy as np
 
@@ -48,6 +50,11 @@ class CieColorTests(unittest.TestCase):
         )
 
         self.assertTrue(image.startswith(b"\x89PNG\r\n\x1a\n"))
+
+    def test_missing_colour_science_is_reported_when_calculation_is_requested(self):
+        with patch.dict(sys.modules, {"colour": None}):
+            with self.assertRaisesRegex(RuntimeError, "colour-science package"):
+                calculate_cie_coordinates([500.0, 600.0], [1.0, 1.0])
 
 
 if __name__ == "__main__":
