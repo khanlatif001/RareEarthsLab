@@ -137,9 +137,9 @@ The application provides downloads for:
 - Uploaded spectrum with converted energy coordinates (CSV).
 - Publication-ready annotated spectrum (300 dpi PNG).
 
-### Apparent XEOL light yield
+### Relative XEOL light yield
 
-For a single uploaded sample spectrum, expand **Apparent XEOL light yield
+For a single uploaded sample spectrum, expand **Relative XEOL light yield
 (reference method)** and upload a reference spectrum measured under comparable
 X-ray fluence, collection geometry, and detector settings. The app calculates
 
@@ -148,7 +148,7 @@ X-ray fluence, collection geometry, and detector settings. The app calculates
 over the wavelength range shared by both spectra. Supply a multiplicative
 detector-correction curve `D(λ)` when needed; choose `D = 1` only when both
 spectra have already received the same correction. The raw-ratio option is
-explicitly marked uncorrected. Apparent yield inherits absolute photons/MeV
+explicitly marked uncorrected. Relative yield inherits absolute photons/MeV
 units only when the reference value is traceable. Optional sample and reference
 background spectra are subtracted with interpolation; each must cover its
 corresponding emission spectrum.

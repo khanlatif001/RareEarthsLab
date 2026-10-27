@@ -660,8 +660,8 @@ def render_apparent_xeol_yield(
     spectrum_axis,
     spectrum_identity,
 ):
-    """Render reference-based apparent and X-ray attenuation-corrected yield."""
-    with st.expander("Apparent XEOL light yield (reference method)"):
+    """Render reference-based relative and X-ray attenuation-corrected yield."""
+    with st.expander("Relative XEOL light yield (reference method)"):
         st.markdown(
             r"""
             \[
