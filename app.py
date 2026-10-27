@@ -739,7 +739,7 @@ def render_apparent_xeol_yield(
             )
 
         apply_absorption_correction = st.checkbox(
-            "Also calculate X-ray-attenuation-corrected yield",
+            "Also calculate X-ray-attenuation-corrected XEOL light yield",
             key=f"apparent_apply_absorption_{spectrum_identity}",
         )
         absorption_method = None
@@ -1110,7 +1110,7 @@ def render_apparent_xeol_yield(
         )
         if corrected_yield is not None:
             st.metric(
-                "X-ray-attenuation-corrected yield (photons/MeV)",
+                "X-ray-attenuation-corrected XEOL light yield (photons/MeV)",
                 f"{corrected_yield:.6g}",
             )
         set_thickness = results.get("scintillator_equivalent_thickness_mm")
