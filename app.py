@@ -853,7 +853,7 @@ def render_apparent_xeol_yield(
             )
 
         calculate_clicked = st.button(
-            "Calculate apparent light yield",
+            "Calculate relative light yield",
             key=f"apparent_calculate_{spectrum_identity}",
             type="primary",
         )
