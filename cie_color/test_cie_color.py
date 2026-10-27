@@ -1,7 +1,9 @@
+from io import BytesIO
+import sys
 import unittest
 from unittest.mock import patch
-import sys
 
+import matplotlib.image
 import numpy as np
 
 from cie_color import (
@@ -50,6 +52,9 @@ class CieColorTests(unittest.TestCase):
         )
 
         self.assertTrue(image.startswith(b"\x89PNG\r\n\x1a\n"))
+        rendered = matplotlib.image.imread(BytesIO(image))
+        self.assertEqual(rendered.shape[:2], (2400, 2700))
+        np.testing.assert_allclose(rendered[0, 0, :3], [1.0, 1.0, 1.0])
 
     def test_missing_colour_science_is_reported_when_calculation_is_requested(self):
         with patch.dict(sys.modules, {"colour": None}):

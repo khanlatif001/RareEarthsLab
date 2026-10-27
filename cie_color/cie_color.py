@@ -160,9 +160,13 @@ def create_cie_chromaticity_image(
         len(y_values), len(x_values), 4
     )
 
-    figure, axis = plt.subplots(figsize=(8, 7), facecolor="black")
+    figure, axis = plt.subplots(
+        figsize=(9, 8),
+        dpi=300,
+        facecolor="white",
+    )
     canvas = FigureCanvasAgg(figure)
-    axis.set_facecolor("black")
+    axis.set_facecolor("white")
     axis.imshow(
         rgba,
         origin="lower",
@@ -170,12 +174,12 @@ def create_cie_chromaticity_image(
         interpolation="bilinear",
         aspect="equal",
     )
-    axis.plot(locus_xy[:, 0], locus_xy[:, 1], color="white", linewidth=0.8)
+    axis.plot(locus_xy[:, 0], locus_xy[:, 1], color="black", linewidth=1.2)
     axis.plot(
         [locus_xy[-1, 0], locus_xy[0, 0]],
         [locus_xy[-1, 1], locus_xy[0, 1]],
-        color="white",
-        linewidth=0.8,
+        color="black",
+        linewidth=1.2,
     )
 
     for wavelength in (450, 470, 480, 520, 540, 560, 580, 600, 620, 700):
@@ -186,8 +190,15 @@ def create_cie_chromaticity_image(
             (x, y),
             xytext=(4, 4),
             textcoords="offset points",
-            color="white",
-            fontsize=8,
+            color="black",
+            fontsize=10,
+            fontweight="bold",
+            bbox={
+                "boxstyle": "round,pad=0.15",
+                "facecolor": "white",
+                "edgecolor": "none",
+                "alpha": 0.85,
+            },
         )
 
     for sample in samples:
@@ -199,10 +210,10 @@ def create_cie_chromaticity_image(
         axis.scatter(
             [x],
             [y],
-            s=115,
+            s=150,
             color="#202020",
             edgecolors="white",
-            linewidths=0.8,
+            linewidths=1.5,
             zorder=4,
         )
         axis.annotate(
@@ -211,7 +222,7 @@ def create_cie_chromaticity_image(
             ha="center",
             va="center",
             color="white",
-            fontsize=8,
+            fontsize=11,
             fontweight="bold",
             zorder=5,
         )
@@ -220,13 +231,20 @@ def create_cie_chromaticity_image(
     axis.set_ylim(0.0, 0.9)
     axis.xaxis.set_major_locator(MultipleLocator(0.1))
     axis.yaxis.set_major_locator(MultipleLocator(0.1))
-    axis.set_xlabel("CIE x", color="white")
-    axis.set_ylabel("CIE y", color="white")
-    axis.set_title("CIE 1931 Chromaticity Diagram", color="white", fontweight="bold")
-    axis.tick_params(colors="white")
+    axis.set_xlabel("CIE x", color="black", fontsize=16, labelpad=10)
+    axis.set_ylabel("CIE y", color="black", fontsize=16, labelpad=10)
+    axis.set_title(
+        "CIE 1931 Chromaticity Diagram",
+        color="black",
+        fontsize=18,
+        fontweight="bold",
+        pad=14,
+    )
+    axis.tick_params(axis="both", colors="black", labelsize=13, width=1.2, length=5)
     for spine in axis.spines.values():
-        spine.set_color("white")
-    figure.tight_layout()
+        spine.set_color("black")
+        spine.set_linewidth(1.2)
+    figure.tight_layout(pad=2)
 
     output = BytesIO()
     canvas.print_png(output)
