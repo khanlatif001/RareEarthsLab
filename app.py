@@ -1609,6 +1609,18 @@ def main():
             color: var(--control-ink);
         }
 
+        .st-key-publication_ready_plot_download button {
+            background-color: var(--control-accent);
+            border-color: var(--control-accent);
+            color: #ffffff;
+        }
+
+        .st-key-publication_ready_plot_download button:hover {
+            background-color: var(--control-accent-hover);
+            border-color: var(--control-accent-hover);
+            color: #ffffff;
+        }
+
         .stButton > button:focus-visible,
         .stDownloadButton > button:focus-visible,
         [data-testid="stFileUploader"] button:focus-visible {
@@ -2571,6 +2583,7 @@ def main():
         file_name="annotated_spectrum_300dpi.png",
         mime="image/png",
         help="Exported at 300 dpi with a 7 x 4.5 inch figure size.",
+        key="publication_ready_plot_download",
     )
 
     st.divider()
