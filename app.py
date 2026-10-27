@@ -739,7 +739,7 @@ def render_apparent_xeol_yield(
             )
 
         apply_absorption_correction = st.checkbox(
-            "Also calculate X-ray-attenuation-corrected XEOL light yield",
+            "Calculate X-ray-attenuation-corrected relative XEOL light yield",
             key=f"apparent_apply_absorption_{spectrum_identity}",
         )
         absorption_method = None
