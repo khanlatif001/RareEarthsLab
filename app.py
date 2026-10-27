@@ -2495,8 +2495,9 @@ def main():
         lifetime_s = material_columns[1].number_input(
             "Lifetime (τ, s)",
             min_value=0.000000000001,
-            value=jo_defaults.tau_s,
-            format="%.10g",
+            value=0.00023,
+            step=0.00001,
+            format="%.5f",
             key=f"{jo_widget_key}_tau_s",
         )
 
