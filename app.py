@@ -1609,13 +1609,17 @@ def main():
             color: var(--control-ink);
         }
 
-        .st-key-publication_ready_plot_download button {
+        .st-key-publication_ready_plot_download button,
+        [class*="st-key-cie_diagram_comparison_download_"] button,
+        [class*="st-key-cie_diagram_download_"] button {
             background-color: var(--control-accent);
             border-color: var(--control-accent);
             color: #ffffff;
         }
 
-        .st-key-publication_ready_plot_download button:hover {
+        .st-key-publication_ready_plot_download button:hover,
+        [class*="st-key-cie_diagram_comparison_download_"] button:hover,
+        [class*="st-key-cie_diagram_download_"] button:hover {
             background-color: var(--control-accent-hover);
             border-color: var(--control-accent-hover);
             color: #ffffff;
