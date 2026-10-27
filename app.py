@@ -1565,6 +1565,123 @@ def render_absolute_xeol_yield(
 
 def main():
     st.set_page_config(page_title="LuminescenceLab: Rare Earth Spectral Analysis", layout="wide")
+    st.markdown(
+        """
+        <style>
+        :root {
+            --control-accent: #0f766e;
+            --control-accent-hover: #115e59;
+            --control-ink: #17324d;
+            --control-border: #8bb9b4;
+            --control-tint: #f0fdfa;
+        }
+
+        .stButton > button {
+            background-color: var(--control-accent);
+            border: 1px solid var(--control-accent);
+            border-radius: 0.5rem;
+            color: #ffffff;
+            font-weight: 600;
+            min-height: 2.6rem;
+            transition: background-color 120ms ease, border-color 120ms ease;
+        }
+
+        .stButton > button:hover {
+            background-color: var(--control-accent-hover);
+            border-color: var(--control-accent-hover);
+            color: #ffffff;
+        }
+
+        .stDownloadButton > button,
+        [data-testid="stFileUploader"] button {
+            background-color: var(--control-tint);
+            border: 1px solid var(--control-accent);
+            border-radius: 0.5rem;
+            color: var(--control-ink);
+            font-weight: 600;
+            min-height: 2.6rem;
+        }
+
+        .stDownloadButton > button:hover,
+        [data-testid="stFileUploader"] button:hover {
+            background-color: #ccfbf1;
+            border-color: var(--control-accent-hover);
+            color: var(--control-ink);
+        }
+
+        .stButton > button:focus-visible,
+        .stDownloadButton > button:focus-visible,
+        [data-testid="stFileUploader"] button:focus-visible {
+            outline: 3px solid #f59e0b;
+            outline-offset: 2px;
+        }
+
+        [data-testid="stCheckbox"] input,
+        [data-testid="stRadio"] input,
+        [data-testid="stToggle"] input {
+            accent-color: var(--control-accent);
+        }
+
+        [data-testid="stCheckbox"] [role="checkbox"],
+        [data-testid="stRadio"] [role="radio"] {
+            border-color: var(--control-accent);
+        }
+
+        [data-testid="stCheckbox"] [role="checkbox"][aria-checked="true"],
+        [data-testid="stRadio"] [role="radio"][aria-checked="true"],
+        [data-testid="stToggle"] [role="switch"][aria-checked="true"] {
+            background-color: var(--control-accent);
+            border-color: var(--control-accent);
+        }
+
+        [data-testid="stToggle"] [role="switch"] {
+            border-color: var(--control-border);
+        }
+
+        [data-testid="stCheckbox"] label,
+        [data-testid="stToggle"] label {
+            color: var(--control-ink);
+            font-weight: 500;
+        }
+
+        [data-testid="stRadio"] [role="radiogroup"] label {
+            color: var(--control-ink);
+        }
+
+        [data-baseweb="select"] > div {
+            background-color: #ffffff;
+            border-color: var(--control-border);
+            color: var(--control-ink);
+        }
+
+        [data-baseweb="select"] > div:focus-within,
+        [data-testid="stTextInput"] input:focus,
+        [data-testid="stNumberInput"] input:focus,
+        [data-testid="stTextArea"] textarea:focus {
+            border-color: var(--control-accent);
+            box-shadow: 0 0 0 2px rgb(15 118 110 / 20%);
+        }
+
+        [data-testid="stTextInput"] input,
+        [data-testid="stNumberInput"] input,
+        [data-testid="stTextArea"] textarea {
+            border-color: var(--control-border);
+            color: var(--control-ink);
+        }
+
+        [data-testid="stSlider"] [role="slider"] {
+            background-color: var(--control-accent);
+            border-color: var(--control-accent);
+        }
+
+        [data-testid="stSlider"] [data-baseweb="slider"] div[role="progressbar"] {
+            background-color: var(--control-accent);
+        }
+
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     st.title("LuminescenceLab: Rare Earth Spectral Analysis")
     st.write(
         "Detect emission peaks and compare their transition energies with the "
