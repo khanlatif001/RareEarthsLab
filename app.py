@@ -2131,6 +2131,9 @@ def main():
         st.caption(
             "Calculated by integrating the measured emission spectrum against "
             "the CIE 1931 2° standard-observer color-matching functions. "
+            "Negative intensity values are clipped to zero for this calculation "
+            "because spectral power cannot be negative; the uploaded data is "
+            "otherwise unchanged. "
             "Accurate color coordinates require wavelength-dependent correction "
             "for the detector and optical response."
         )

@@ -48,7 +48,11 @@ def calculate_cie_coordinates(
     wavelength_nm: np.ndarray | list[float],
     intensity: np.ndarray | list[float],
 ) -> dict[str, float]:
-    """Integrate an emission spectrum against the CIE 1931 2 degree observer."""
+    """Integrate non-negative emission signal against the CIE 1931 observer.
+
+    Negative signal values are clipped to zero because spectral power cannot be
+    negative, while preserving the original spectrum everywhere else.
+    """
     wavelengths = np.asarray(wavelength_nm, dtype=float)
     signal = np.asarray(intensity, dtype=float)
     if (
@@ -63,11 +67,7 @@ def calculate_cie_coordinates(
         raise ValueError("Wavelengths and intensities must contain only finite values.")
     if np.any(wavelengths <= 0):
         raise ValueError("Wavelengths must be positive.")
-    if np.any(signal < 0):
-        raise ValueError(
-            "CIE color coordinates require non-negative spectral intensities. "
-            "Correct or remove the negative signal values first."
-        )
+    signal = np.maximum(signal, 0.0)
 
     order = np.argsort(wavelengths)
     wavelengths = wavelengths[order]

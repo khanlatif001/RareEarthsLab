@@ -36,7 +36,8 @@ browser-based interface.
   The calculation uses the standard observer's tabulated color-matching
   functions and measured intensity as the emission spectrum. Meaningful color
   coordinates require wavelength-dependent correction for detector and optical
-  response; negative intensities are rejected. The downloadable diagram uses a
+  response; negative intensities are clipped to zero for CIE integration
+  because spectral power cannot be negative. The downloadable diagram uses a
   white background, high-contrast labels, enlarged typography, and is exported
   at 300 dpi with a 9 × 8 inch figure size.
 - Upload multiple files to compare scans from the same sample. Choose an

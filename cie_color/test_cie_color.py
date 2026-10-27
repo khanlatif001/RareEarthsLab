@@ -49,9 +49,19 @@ class CieColorTests(unittest.TestCase):
         np.testing.assert_allclose(rgb[0], [1.0, 1.0, 1.0], atol=1e-3)
         np.testing.assert_allclose(rgb[1], [1.0, 0.0, 0.0], atol=2e-3)
 
-    def test_rejects_negative_intensity(self):
-        with self.assertRaisesRegex(ValueError, "non-negative"):
-            calculate_cie_coordinates([500.0, 600.0], [1.0, -0.1])
+    def test_negative_intensities_are_clipped_to_zero_for_cie_integration(self):
+        wavelengths = [500.0, 550.0, 600.0, 650.0]
+        result_with_negative = calculate_cie_coordinates(
+            wavelengths,
+            [-2.0, 1.0, -0.5, 0.25],
+        )
+        result_with_clipped_values = calculate_cie_coordinates(
+            wavelengths,
+            [0.0, 1.0, 0.0, 0.25],
+        )
+
+        for coordinate, value in result_with_negative.items():
+            self.assertAlmostEqual(value, result_with_clipped_values[coordinate])
 
     def test_rejects_spectrum_outside_observer_range(self):
         with self.assertRaisesRegex(ValueError, "does not overlap"):
