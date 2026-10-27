@@ -10,6 +10,7 @@ from cie_color import (
     calculate_cie_coordinates,
     create_cie_chromaticity_image,
 )
+from cie_color.cie_color import _chromaticity_to_srgb
 
 
 class CieColorTests(unittest.TestCase):
@@ -34,6 +35,19 @@ class CieColorTests(unittest.TestCase):
 
         for coordinate in ("cie_x", "cie_y", "cie_z"):
             self.assertAlmostEqual(reference[coordinate], scaled[coordinate])
+
+    def test_chromaticity_colors_are_bright_and_preserve_neutral_white(self):
+        xyz = np.array(
+            [
+                [0.3127 / 0.329, 1.0, (1.0 - 0.3127 - 0.329) / 0.329],
+                [0.64 / 0.33, 1.0, (1.0 - 0.64 - 0.33) / 0.33],
+            ]
+        )
+
+        rgb = _chromaticity_to_srgb(xyz)
+
+        np.testing.assert_allclose(rgb[0], [1.0, 1.0, 1.0], atol=1e-3)
+        np.testing.assert_allclose(rgb[1], [1.0, 0.0, 0.0], atol=2e-3)
 
     def test_rejects_negative_intensity(self):
         with self.assertRaisesRegex(ValueError, "non-negative"):

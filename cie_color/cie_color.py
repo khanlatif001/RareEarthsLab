@@ -27,6 +27,23 @@ def _get_cie_observer():
     return colour.MSDS_CMFS["CIE 1931 2 Degree Standard Observer"]
 
 
+def _chromaticity_to_srgb(xyz: np.ndarray) -> np.ndarray:
+    """Map chromaticity colors to bright sRGB values for the diagram."""
+    colour = _get_colour_module()
+    linear_rgb = np.maximum(
+        colour.XYZ_to_sRGB(xyz, apply_cctf_encoding=False),
+        0.0,
+    )
+    peak = np.max(linear_rgb, axis=1, keepdims=True)
+    normalized_rgb = np.divide(
+        linear_rgb,
+        peak,
+        out=np.zeros_like(linear_rgb),
+        where=peak > 0,
+    )
+    return colour.cctf_encoding(normalized_rgb, function="sRGB")
+
+
 def calculate_cie_coordinates(
     wavelength_nm: np.ndarray | list[float],
     intensity: np.ndarray | list[float],
@@ -154,8 +171,7 @@ def create_cie_chromaticity_image(
             np.maximum(1.0 - xy_points[:, 0] - xy_points[:, 1], 0.0) / safe_y,
         )
     )
-    colour = _get_colour_module()
-    rgb = np.clip(colour.XYZ_to_sRGB(xyz), 0.0, 1.0)
+    rgb = _chromaticity_to_srgb(xyz)
     rgba = np.column_stack((rgb, inside.astype(float))).reshape(
         len(y_values), len(x_values), 4
     )
